@@ -32,6 +32,8 @@ pnpm build
 pnpm lint
 ```
 
+Use PowerShell-safe separate commands rather than chaining with `&&` in this repo's Windows environment.
+
 ## Local demo app
 
 The repo includes a small local validation harness under `examples/demo-app/`.
@@ -43,6 +45,8 @@ From the repository root:
 ```bash
 pnpm demo
 ```
+
+The default Vite dev server runs at `http://localhost:5173/`.
 
 ### Build the demo app
 
@@ -91,6 +95,12 @@ Before considering a change ready, verify:
 - `pnpm test`
 - `pnpm build`
 - demo behavior if React UI or styling changed
+
+## Notes on current demo-tooling behavior
+
+- `pnpm demo:build` currently succeeds, but Vite emits warnings about `'use client'` directives being ignored when bundling directly from package source files for the local demo harness.
+- Those warnings are expected in this preview setup and do not affect the library build outputs.
+- npm may also emit environment-config warnings inherited from repo-level npm configuration when `pnpm demo` or `pnpm demo:build` delegates to `npm --prefix`; these are noisy but non-blocking for the demo workflow.
 
 ## Package entrypoints to keep in mind
 

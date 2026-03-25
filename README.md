@@ -47,6 +47,17 @@ Use the headless API from `@evergraytech/ai-config`, the optional React layer fr
 - `docs/development.md` — canonical maintainer workflow guide
 - `docs/system-spec.md` — architectural guardrails and capability boundaries
 
+## Quick start
+
+- install: `pnpm add @evergraytech/ai-config react`
+- import core APIs from `@evergraytech/ai-config`
+- import React APIs from `@evergraytech/ai-config/react`
+- import styles from `@evergraytech/ai-config/styles/base.css`
+
+For full integration guidance, examples, styling guidance, and host-app customization, use `docs/consumption-guide.md`.
+
+For local repo workflows and the in-repo demo harness, use `docs/development.md`.
+
 ## Local-first credential caveat
 
 This package intentionally supports storing provider API keys locally in the user’s browser/device context.

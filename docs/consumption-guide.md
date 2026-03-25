@@ -27,6 +27,17 @@ pnpm add @evergraytech/ai-config react
 - React APIs from `@evergraytech/ai-config/react`
 - stylesheet from `@evergraytech/ai-config/styles/base.css`
 
+## Integration boundaries
+
+Use this package for configuration, settings state, provider/model selection, validation surfaces, and related UI.
+
+Do not treat it as:
+
+- a complete inference runtime
+- a prompt orchestration framework
+- a billing or exact usage-metering system
+- a backend credential vault
+
 ## Headless usage
 
 ```ts
@@ -110,6 +121,8 @@ The package provides stable styling hooks including:
 - `.eg-ai-config-button`
 - `.eg-ai-config-status`
 
+Host apps can override the package styling either by targeting those hooks directly or by overriding the exposed AI-scoped CSS variables.
+
 ## Optional design-system-aware styling
 
 If your app already imports EverGray Tech design-system CSS variables, ai-config will automatically bridge to them through its AI-scoped CSS variables.
@@ -134,6 +147,8 @@ Host apps can control:
 - provider ordering and overrides
 - validation behavior
 - storage adapter replacement
+
+Host apps may also choose to consume only the headless layer and build their own UI entirely.
 
 ## Persistence and validation posture
 
