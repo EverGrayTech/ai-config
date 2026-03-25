@@ -164,27 +164,6 @@ The package is expected to be delivered as one publishable package with two logi
 - headless/core exports for state, storage, registries, validation, and utilities
 - optional React exports for hooks, context, and settings components
 
-Planned internal structure:
-
-```txt
-src/
-  core/
-    types/
-    config/
-    storage/
-    providers/
-    models/
-    usage/
-    validation/
-    hooks/
-  react/
-    components/
-    hooks/
-    styles/
-  index.ts
-  react.ts
-```
-
 ## Intended usage modes
 
 ### Default app-provided mode
@@ -200,14 +179,3 @@ Users can optionally select a supported provider, save their own API key locally
 - `README.md` introduces the package and its purpose
 - `docs/system-spec.md` defines architectural guardrails, capability boundaries, and expected behavior
 - `.plans/` contains phased implementation plans for building the package incrementally
-
-## Planned implementation roadmap
-
-- headless foundation
-- provider/model registry and validation
-- React integration and lightly styled settings UI
-- testing, polish, documentation, and release readiness
-
-## Status
-
-This repository is being set up as the shared foundation for EverGray Tech AI configuration components. The current docs define direction and implementation scope for the initial v0 package.
