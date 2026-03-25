@@ -56,6 +56,16 @@ Use the headless API from `@evergraytech/ai-config`, the optional React layer fr
 
 For full integration guidance, examples, styling guidance, and host-app customization, use [Consumption Guide](docs/consumption-guide.md).
 
+## React integration posture
+
+The optional React layer is browser/client-first.
+
+- render `AIConfigProvider` and React consumers inside a client component boundary
+- import `@evergraytech/ai-config/styles/base.css` anywhere the packaged UI is used
+- expect persisted settings to load from `localStorage` after client mount
+- embed `AIConfigPanel` inside existing settings layouts by default, or opt into package framing with `framed`
+- use exported hooks such as `useAIConfigState()` when host-owned UI needs to read current AI config outside the packaged panel
+
 For local repo workflows and the in-repo demo harness, use [Development](docs/development.md).
 
 ## Local-first credential caveat

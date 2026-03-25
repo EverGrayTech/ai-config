@@ -74,11 +74,22 @@ console.log(result.status, manager.getState());
 
 ## React usage
 
+The packaged React layer is intended for client-rendered browser settings UI.
+
+- `AIConfigProvider` and any components or hooks from `@evergraytech/ai-config/react` should live in a client component.
+- Persisted state is loaded from `localStorage`, so saved user config becomes available after client mount.
+- In hosts such as Next.js App Router, do not depend on persisted AI config being available during server render or static generation.
+- Static export is supported as long as the package is used as client-rendered UI and no server-only persistence assumption is introduced.
+
 ```tsx
 'use client';
 
 import '@evergraytech/ai-config/styles/base.css';
-import { AIConfigPanel, AIConfigProvider } from '@evergraytech/ai-config/react';
+import {
+  AIConfigPanel,
+  AIConfigProvider,
+  useAIConfigState,
+} from '@evergraytech/ai-config/react';
 import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
 
 const appDefinition: AIConfigAppDefinition = {
@@ -98,11 +109,30 @@ const appDefinition: AIConfigAppDefinition = {
 export function AISettingsCard() {
   return (
     <AIConfigProvider appDefinition={appDefinition}>
-      <AIConfigPanel />
+      <section>
+        <h2>AI settings</h2>
+        <p>Choose whether to use app-provided AI or your own provider key.</p>
+        <AIConfigPanel />
+      </section>
     </AIConfigProvider>
   );
 }
+
+export function AISettingsStatus() {
+  const state = useAIConfigState();
+
+  return <p>Current provider: {state.selectedProvider ?? 'none selected'}</p>;
+}
 ```
+
+## Embedding inside an existing Settings page
+
+`AIConfigPanel` is intended to work as a section-level building block, not as a full-page shell.
+
+- Host apps can render their own headings, trust-model copy, and adjacent settings sections before or after the panel.
+- By default, `AIConfigPanel` is layout-neutral and does not add card framing.
+- If a host wants package-provided framing for a standalone presentation, it can render `<AIConfigPanel framed />`.
+- Host apps that need more control can compose lower-level exported components or use the headless layer directly.
 
 ## Styling usage
 
@@ -117,11 +147,27 @@ The package provides stable styling hooks including:
 - `.eg-ai-config-panel`
 - `.eg-ai-config-section`
 - `.eg-ai-config-field`
+- `.eg-ai-config-actions`
 - `.eg-ai-config-control`
 - `.eg-ai-config-button`
 - `.eg-ai-config-status`
 
+Stable data-attribute hooks include:
+
+- `data-eg-ai-config-panel`
+- `data-eg-ai-config-framed`
+- `data-eg-ai-config-section`
+- `data-eg-ai-config-field`
+- `data-eg-ai-config-actions`
+- `data-eg-ai-config-action`
+
 Host apps can override the package styling either by targeting those hooks directly or by overriding the exposed AI-scoped CSS variables.
+
+Framing guidance:
+
+- render `AIConfigPanel` directly inside an existing app card or section when the host owns outer spacing and borders
+- use `framed` only when the package should render its own card-like container
+- prefer overriding AI-scoped CSS variables or stable hooks rather than depending on incidental internal DOM structure
 
 ## Optional design-system-aware styling
 
@@ -149,6 +195,22 @@ Host apps can control:
 - storage adapter replacement
 
 Host apps may also choose to consume only the headless layer and build their own UI entirely.
+
+## Reading state outside the panel
+
+Host-owned React components can read current AI configuration without bypassing package ownership.
+
+- use `useAIConfigState()` to read the current selected mode, provider, model, credentials, and generation settings
+- use `useAIConfig()` when host code also needs access to the manager instance
+- use `useAIConfigActions()` to trigger supported updates through the packaged ownership model
+
+For non-React integrations, hosts can supply their own manager instance to `AIConfigProvider` and subscribe through the headless manager API.
+
+## Config change notifications
+
+Hosts that need analytics labels or other side effects on meaningful config changes can provide `onChange` to `AIConfigProvider`.
+
+The callback receives the next resolved config state after package-managed updates. This is intended for read-only side effects such as analytics, copy refresh, or downstream labeling, not for replacing the package as the source of truth.
 
 ## Persistence and validation posture
 

@@ -7,6 +7,7 @@ export {
 } from './react/context/AIConfigContext';
 export { useAvailableModels } from './react/hooks/useAvailableModels';
 export { useAvailableProviders } from './react/hooks/useAvailableProviders';
+export type { AIConfigPanelProps } from './react/components/AIConfigPanel';
 export { AIConfigPanel } from './react/components/AIConfigPanel';
 export { AIModeSelector } from './react/components/AIModeSelector';
 export { AIProviderSelector } from './react/components/AIProviderSelector';

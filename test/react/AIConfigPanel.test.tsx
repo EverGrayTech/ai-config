@@ -84,6 +84,23 @@ describe('AIConfigPanel', () => {
     expect(screen.getByLabelText('AI model')).toBeInTheDocument();
     expect(screen.getByText('Generation settings')).toBeInTheDocument();
     expect(screen.getByLabelText('AI configuration panel')).toHaveClass('eg-ai-config-panel');
+    expect(screen.getByLabelText('AI configuration panel')).toHaveAttribute(
+      'data-eg-ai-config-framed',
+      'false',
+    );
+  });
+
+  it('supports optional package-provided framing when requested', () => {
+    render(
+      <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+        <AIConfigPanel framed />
+      </AIConfigProvider>,
+    );
+
+    expect(screen.getByLabelText('AI configuration panel')).toHaveAttribute(
+      'data-eg-ai-config-framed',
+      'true',
+    );
   });
 
   it('updates mode, provider, model, and generation settings through interactions', async () => {
@@ -184,6 +201,29 @@ describe('AIConfigPanel', () => {
 
     expect(screen.getByTestId('hook-model-count')).toHaveTextContent('2');
     expect(screen.getByTestId('hook-manager-mode')).toHaveTextContent('byok');
+  });
+
+  it('notifies hosts about config changes through provider onChange', async () => {
+    const user = userEvent.setup();
+    const events: string[] = [];
+
+    render(
+      <AIConfigProvider
+        appDefinition={appDefinition}
+        loadOnMount={false}
+        onChange={(event) =>
+          events.push(`${event.nextState.mode}:${event.nextState.selectedProvider ?? 'none'}`)
+        }
+      >
+        <AIConfigPanel />
+      </AIConfigProvider>,
+    );
+
+    await user.click(screen.getByLabelText('Bring your own key'));
+    await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
+
+    expect(events).toContain('byok:hosted');
+    expect(events).toContain('byok:openai');
   });
 
   it('covers additional accessibility and conditional render states', async () => {

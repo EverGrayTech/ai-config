@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import {
   type AIConfigAppDefinition,
+  type AIConfigChangeEvent,
   type AIConfigManager,
   type AIConfigManagerOptions,
   type AIConfigState,
@@ -27,6 +28,7 @@ export interface AIConfigProviderProps {
   manager?: AIConfigManager;
   managerOptions?: Omit<AIConfigManagerOptions, 'appDefinition'>;
   loadOnMount?: boolean;
+  onChange?: (event: AIConfigChangeEvent) => void;
 }
 
 export function AIConfigProvider({
@@ -35,6 +37,7 @@ export function AIConfigProvider({
   manager,
   managerOptions,
   loadOnMount = true,
+  onChange,
 }: AIConfigProviderProps) {
   const resolvedManager = useMemo(
     () => manager ?? createAIConfigManager({ appDefinition, ...managerOptions }),
@@ -60,6 +63,13 @@ export function AIConfigProvider({
     void resolvedManager.load();
   }, [loadOnMount, resolvedManager]);
 
+  useEffect(() => {
+    if (!onChange) {
+      return;
+    }
+
+    return resolvedManager.onChange(onChange);
+  }, [onChange, resolvedManager]);
   return (
     <AIConfigContext.Provider value={{ manager: resolvedManager, state }}>
       {children}

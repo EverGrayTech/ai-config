@@ -134,6 +134,10 @@ export interface AIConfigManagerOptions {
   initialState?: Partial<AIConfigState>;
 }
 
+export interface AIConfigChangeEvent {
+  nextState: AIConfigState;
+}
+
 export interface AIConfigManager {
   getState(): AIConfigState;
   setMode(mode: AIConfigMode): AIConfigState;
@@ -147,6 +151,7 @@ export interface AIConfigManager {
   updateGeneration(settings: Partial<AIGenerationSettings>): AIConfigState;
   reset(): AIConfigState;
   subscribe(listener: (state: AIConfigState) => void): () => void;
+  onChange(listener: (event: AIConfigChangeEvent) => void): () => void;
   load(): Promise<AIConfigState>;
   save(): Promise<void>;
   clearPersisted(): Promise<void>;

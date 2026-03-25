@@ -11,12 +11,17 @@ import { AIModelSelector } from './AIModelSelector';
 import { AIProviderSelector } from './AIProviderSelector';
 import { AIUsageHint } from './AIUsageHint';
 
-export function AIConfigPanel() {
+export interface AIConfigPanelProps {
+  framed?: boolean;
+}
+
+export function AIConfigPanel({ framed = false }: AIConfigPanelProps) {
   return (
     <section
       aria-label="AI configuration panel"
       className="eg-ai-config-panel"
       data-eg-ai-config-panel="true"
+      data-eg-ai-config-framed={framed ? 'true' : 'false'}
     >
       <AIModeSelector />
       <AIProviderSelector />

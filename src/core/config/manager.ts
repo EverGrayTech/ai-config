@@ -1,6 +1,7 @@
 import { createLocalStorageAIConfigStorageAdapter } from '../storage/localStorage';
 import { clearAIConfig, loadAIConfig, saveAIConfig } from '../storage/persistence';
 import type {
+  AIConfigChangeEvent,
   AIConfigManager,
   AIConfigManagerOptions,
   AIConfigState,
@@ -26,10 +27,17 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
 
   let state = mergeAIConfigWithAppDefinition(options.appDefinition, options.initialState);
   const listeners = new Set<(currentState: AIConfigState) => void>();
+  const changeListeners = new Set<(event: AIConfigChangeEvent) => void>();
 
   const emit = (): void => {
     for (const listener of listeners) {
       listener(state);
+    }
+
+    const event: AIConfigChangeEvent = { nextState: state };
+
+    for (const listener of changeListeners) {
+      listener(event);
     }
   };
 
@@ -72,6 +80,13 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
 
       return () => {
         listeners.delete(listener);
+      };
+    },
+    onChange(listener) {
+      changeListeners.add(listener);
+
+      return () => {
+        changeListeners.delete(listener);
       };
     },
     async load() {

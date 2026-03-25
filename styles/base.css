@@ -23,12 +23,19 @@
 
   display: grid;
   gap: var(--eg-ai-panel-gap);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--eg-ai-text);
+  font-family: var(--eg-ai-font-family);
+}
+
+.eg-ai-config-panel[data-eg-ai-config-framed="true"] {
   padding: var(--spacing-lg, 1rem);
   border: 1px solid var(--eg-ai-border);
   border-radius: var(--eg-ai-radius);
   background: var(--eg-ai-bg);
-  color: var(--eg-ai-text);
-  font-family: var(--eg-ai-font-family);
 }
 
 .eg-ai-config-section {

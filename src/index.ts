@@ -1,5 +1,6 @@
 export {
   AI_CONFIG_SCHEMA_VERSION,
+  type AIConfigChangeEvent,
   type AIConfigAppDefinition,
   type AIConfigManager,
   type AIConfigManagerOptions,
