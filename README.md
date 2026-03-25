@@ -43,9 +43,9 @@ Use the headless API from `@evergraytech/ai-config`, the optional React layer fr
 
 ## Documentation map
 
-- `docs/consumption-guide.md` — canonical downstream integration guide
-- `docs/development.md` — canonical maintainer workflow guide
-- `docs/system-spec.md` — architectural guardrails and capability boundaries
+- [Consumption Guide](docs/consumption-guide.md) — canonical downstream integration guide
+- [Development](docs/development.md) — canonical maintainer workflow guide
+- [System Spec](docs/system-spec.md) — architectural guardrails and capability boundaries
 
 ## Quick start
 
@@ -54,9 +54,9 @@ Use the headless API from `@evergraytech/ai-config`, the optional React layer fr
 - import React APIs from `@evergraytech/ai-config/react`
 - import styles from `@evergraytech/ai-config/styles/base.css`
 
-For full integration guidance, examples, styling guidance, and host-app customization, use `docs/consumption-guide.md`.
+For full integration guidance, examples, styling guidance, and host-app customization, use [Consumption Guide](docs/consumption-guide.md).
 
-For local repo workflows and the in-repo demo harness, use `docs/development.md`.
+For local repo workflows and the in-repo demo harness, use [Development](docs/development.md).
 
 ## Local-first credential caveat
 
@@ -77,4 +77,4 @@ The package is expected to be delivered as one publishable package with two logi
 
 ## Local development
 
-For repo workflows, quality checks, and the in-repo demo app, see `docs/development.md`.
+For repo workflows, quality checks, and the in-repo demo app, see [Development](docs/development.md).

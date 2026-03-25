@@ -177,6 +177,6 @@ Use the **React layer** when:
 
 ## Related docs
 
-- `README.md` — repo/package overview
-- `docs/system-spec.md` — architectural expectations and boundaries
-- `docs/development.md` — maintainer workflows for this repo
+- [README.md](README.md) — repo/package overview
+- [System Spec](docs/system-spec.md) — architectural expectations and boundaries
+- [Development](docs/development.md) — maintainer workflows for this repo

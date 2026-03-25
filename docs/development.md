@@ -82,9 +82,9 @@ This validates the optional CSS-variable bridging added in the package styleshee
 
 When package behavior changes, update the relevant docs:
 
-- `README.md` for repo-level orientation
-- `docs/consumption-guide.md` for downstream consumers
-- `docs/system-spec.md` for architectural expectations when needed
+- [README.md](README.md) for repo-level orientation
+- [Consumption Guide](docs/consumption-guide.md) for downstream consumers
+- [System Spec](docs/system-spec.md) for architectural expectations when needed
 - `.plans/` when implementation phases are added or completed
 
 ## Quality expectations
@@ -101,6 +101,35 @@ Before considering a change ready, verify:
 - `pnpm demo:build` currently succeeds, but Vite emits warnings about `'use client'` directives being ignored when bundling directly from package source files for the local demo harness.
 - Those warnings are expected in this preview setup and do not affect the library build outputs.
 - npm may also emit environment-config warnings inherited from repo-level npm configuration when `pnpm demo` or `pnpm demo:build` delegates to `npm --prefix`; these are noisy but non-blocking for the demo workflow.
+
+## Releasing
+
+### Bump the version number
+
+```sh
+npm version minor   # or patch/major
+```
+
+### Build and verify consumables
+
+```sh
+pnpm build
+pnpm pack --dry-run
+```
+
+### Publish the package
+
+```sh
+npm publish
+git push
+git push --tags
+```
+
+### Consumer adoption
+
+For downstream installation, upgrade guidance, public entrypoints, and usage posture, see [Consumption Guide](docs/consumption-guide.md).
+
+The publishable package surface is defined by [package.json](package.json) exports and files configuration. Keep release validation aligned with the actual published entrypoints.
 
 ## Package entrypoints to keep in mind
 
