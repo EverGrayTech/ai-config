@@ -6,7 +6,16 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": {},
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    }
+  },
   "files": [
     "dist",
     "README.md"
@@ -20,12 +29,16 @@
   },
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
-    "test": "tsc -p tsconfig.json --noEmit"
+    "build": "tsc -p tsconfig.json",
+    "lint": "pnpm biome check .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --coverage"
   },
   "devDependencies": {
     "@types/react": "^19.1.2",
     "react": "^19.1.0",
-    "style-dictionary": "^4",
-    "typescript": "^5.8.2"
+    "@biomejs/biome": "^1.9.4",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
   }
 }
