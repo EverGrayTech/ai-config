@@ -39,141 +39,13 @@ It is not intended to be the full AI execution runtime. It manages configuration
 pnpm add @evergraytech/ai-config react
 ```
 
-Use the headless API from `@evergraytech/ai-config` and the optional React layer from `@evergraytech/ai-config/react`.
+Use the headless API from `@evergraytech/ai-config`, the optional React layer from `@evergraytech/ai-config/react`, and the base stylesheet from `@evergraytech/ai-config/styles/base.css`.
 
-## Headless usage example
+## Documentation map
 
-```ts
-import {
-  createAIConfigManager,
-  getAvailableModels,
-  validateCredential,
-  type AIConfigAppDefinition,
-} from '@evergraytech/ai-config';
-
-const appDefinition: AIConfigAppDefinition = {
-  appId: 'plot-your-path',
-  defaultMode: {
-    enabled: true,
-    label: 'EverGray Tech default AI',
-    provider: 'hosted',
-    model: 'evergray-tech-default',
-    usageHint: 'Free usage is limited by the host app.',
-  },
-  byok: {
-    enabled: true,
-    providers: ['openai', 'anthropic'],
-  },
-  defaultGeneration: {
-    temperature: 0.4,
-    maxOutputTokens: 800,
-  },
-};
-
-const manager = createAIConfigManager({ appDefinition });
-
-manager.setMode('byok');
-manager.setProvider('openai');
-manager.setModel(getAvailableModels('openai', appDefinition)[0]?.id ?? null);
-manager.setCredential('openai', { apiKey: 'sk-example' });
-
-const result = await validateCredential('openai', 'sk-example', appDefinition);
-await manager.save();
-
-console.log(result.status, manager.getState());
-```
-
-## React usage example
-
-```tsx
-'use client';
-
-import {
-  AIConfigPanel,
-  AIConfigProvider,
-} from '@evergraytech/ai-config/react';
-import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
-
-const appDefinition: AIConfigAppDefinition = {
-  appId: 'design-system-demo',
-  defaultMode: {
-    enabled: true,
-    label: 'App-provided AI',
-    provider: 'hosted',
-    model: 'evergray-default',
-  },
-  byok: {
-    enabled: true,
-    providers: ['openai', 'anthropic'],
-  },
-};
-
-export function AISettingsCard() {
-  return (
-    <AIConfigProvider appDefinition={appDefinition}>
-      <AIConfigPanel />
-    </AIConfigProvider>
-  );
-}
-```
-
-## Host app customization example
-
-- filter providers with `byok.providers`
-- reorder them with `providerOrder`
-- restrict models with `modelFilter`
-- override labels/help text/validation with `providerOverrides`
-- replace browser storage with a custom `AIConfigStorageAdapter`
-
-## Persistence, recovery, and versioning
-
-- stored state uses a schema-versioned payload
-- default persistence uses `localStorage` through an adapter
-- SSR/non-browser usage fails safely
-- corrupted or incompatible payloads reset to a valid normalized state
-- normalization preserves unaffected settings when providers/models disappear
-
-## Validation and security notes
-
-- validation is pluggable and can be supplied by providers or host apps
-- raw secrets should never be logged or surfaced in validation output
-- stored keys are local to the user’s browser/device and are **not** equivalent to server-side secret storage
-- use `redactCredential()` and `sanitizeAIConfigForDebug()` for safe debug surfaces
-
-## Styling and theming guidance
-
-- import the neutral base stylesheet with `import '@evergraytech/ai-config/styles/base.css';`
-- if your app already imports `@evergraytech/design-system/dist/variables.css`, ai-config styles will automatically bridge to those CSS variables where available
-- built-in React components are intentionally lightly styled
-- wrap components in your design-system primitives where needed
-- prefer using the headless layer if a host app needs fully custom layout or behavior
-- current components are designed to remain usable in dark-theme and restrained UI contexts
-- stable class names and `data-*` hooks are provided for targeted overrides
-- ai-config does not import or depend on `@evergraytech/design-system`; alignment is purely via optional CSS variable presence
-
-### Styling contract
-
-- root panel: `.eg-ai-config-panel` / `[data-eg-ai-config-panel="true"]`
-- sections: `.eg-ai-config-section` with `data-eg-ai-config-section`
-- fields: `.eg-ai-config-field` with `data-eg-ai-config-field`
-- controls: `.eg-ai-config-control`
-- actions row: `.eg-ai-config-actions` with `data-eg-ai-config-actions`
-- buttons: `.eg-ai-config-button`
-- status messaging: `.eg-ai-config-status` with `data-eg-ai-config-status`
-
-### Optional design-system-aware styling
-
-When a host app has already loaded EverGray Tech design-system variables, the base stylesheet bridges to them through AI-scoped variables such as:
-
-- `--eg-ai-bg`
-- `--eg-ai-text`
-- `--eg-ai-border`
-- `--eg-ai-muted-border`
-- `--eg-ai-focus`
-- `--eg-ai-success`
-- `--eg-ai-warning`
-
-Those AI-scoped variables resolve to design-system CSS variables when available and fall back to neutral values when not. Third-party apps can override the AI-scoped variables directly without depending on EverGray Tech tokens.
+- `docs/consumption-guide.md` — canonical downstream integration guide
+- `docs/development.md` — canonical maintainer workflow guide
+- `docs/system-spec.md` — architectural guardrails and capability boundaries
 
 ## Local-first credential caveat
 
@@ -192,18 +64,6 @@ The package is expected to be delivered as one publishable package with two logi
 - headless/core exports for state, storage, registries, validation, and utilities
 - optional React exports for hooks, context, and settings components
 
-## Intended usage modes
+## Local development
 
-### Default app-provided mode
-
-Host apps can expose a built-in AI option so users can start immediately without entering an API key.
-
-### Bring your own key
-
-Users can optionally select a supported provider, save their own API key locally, validate it through pluggable logic, and choose from the provider’s supported models.
-
-## Documentation posture
-
-- `README.md` introduces the package and its purpose
-- `docs/system-spec.md` defines architectural guardrails, capability boundaries, and expected behavior
-- `.plans/` contains phased implementation plans for building the package incrementally
+For repo workflows, quality checks, and the in-repo demo app, see `docs/development.md`.

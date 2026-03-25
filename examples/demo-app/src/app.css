@@ -1,0 +1,110 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, sans-serif;
+  background: #111318;
+  color: #f3f4f6;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #111318;
+  color: #f3f4f6;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.demo-app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.demo-sidebar {
+  padding: 1.5rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.demo-nav {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.demo-nav button,
+.demo-toolbar button {
+  font: inherit;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.demo-nav button[data-active='true'] {
+  background: rgba(58, 122, 187, 0.2);
+  border-color: rgba(58, 122, 187, 0.5);
+}
+
+.demo-main {
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.demo-toolbar,
+.demo-grid,
+.demo-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.demo-grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.demo-card {
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.demo-card h2,
+.demo-card h3,
+.demo-sidebar h1,
+.demo-sidebar h2 {
+  margin-top: 0;
+}
+
+.demo-note {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.95rem;
+}
+
+.demo-design-system {
+  --color-neutral-surface: #181b20;
+  --color-neutral-surface-raised: #20242b;
+  --color-text-primary: #f5f7fb;
+  --color-border-edge: #2c3440;
+  --color-border-subtle: #3a4250;
+  --color-accent-solid: #3a7abb;
+  --color-semantic-success-foreground: #48c78e;
+  --color-semantic-warning-foreground: #f4b860;
+  --radii-md: 16px;
+  --radii-sm: 10px;
+  --spacing-lg: 1.25rem;
+  --spacing-md: 0.875rem;
+  --spacing-sm: 0.625rem;
+  --spacing-xs: 0.375rem;
+  --typography-family-sans: Inter, system-ui, sans-serif;
+  --typography-size-sm: 0.95rem;
+  --typography-line-height-normal: 1.45;
+  --typography-weight-semibold: 650;
+}

@@ -23,34 +23,34 @@ Add a small in-repo demo application that renders `@evergraytech/ai-config` comp
 ## Implementation Checklist
 
 ### 1. Establish Demo-App Architecture
-- [ ] Add a lightweight React-based local demo app under a clearly non-publishable repo path such as `examples/demo-app/`
-- [ ] Configure the demo so it can consume the local package source/build cleanly during development
-- [ ] Ensure the app has a clear startup command and minimal maintenance burden
+- [x] Add a lightweight React-based local demo app under a clearly non-publishable repo path such as `examples/demo-app/`
+- [x] Configure the demo so it can consume the local package source/build cleanly during development
+- [x] Ensure the app has a clear startup command and minimal maintenance burden
 
 ### 2. Create Durable Validation Surfaces
-- [ ] Add an overview screen for the composed `AIConfigPanel` happy path
-- [ ] Add a component gallery screen for validating individual exported React components in isolation or focused composition
-- [ ] Add a state-scenarios screen for validating important configuration states (default mode, BYOK, saved key, validation states, usage states)
-- [ ] Structure screens/components so future exports can be added without redesigning the demo app
+- [x] Add an overview screen for the composed `AIConfigPanel` happy path
+- [x] Add a component gallery screen for validating individual exported React components in isolation or focused composition
+- [x] Add a state-scenarios screen for validating important configuration states (default mode, BYOK, saved key, validation states, usage states)
+- [x] Structure screens/components so future exports can be added without redesigning the demo app
 
 ### 3. Support Optional Design-System Validation
-- [ ] Keep the default demo path working without `@evergraytech/design-system`
-- [ ] Provide an optional validation mode that can load design-system CSS variables when available locally
-- [ ] Ensure the demo’s optional design-system posture does not create runtime or package coupling for the main library
+- [x] Keep the default demo path working without `@evergraytech/design-system`
+- [x] Provide an optional validation mode that can load design-system CSS variables when available locally
+- [x] Ensure the demo’s optional design-system posture does not create runtime or package coupling for the main library
 
 ### 4. Developer Experience for the Demo
-- [ ] Add a simple navigation/control pattern for switching between screens and validation scenarios
-- [ ] Make it easy to verify neutral styling vs design-system-aware styling
-- [ ] Keep the demo lightweight enough that it complements tests rather than replacing them
+- [x] Add a simple navigation/control pattern for switching between screens and validation scenarios
+- [x] Make it easy to verify neutral styling vs design-system-aware styling
+- [x] Keep the demo lightweight enough that it complements tests rather than replacing them
 
 ### 5. Validation and Repo Fit
-- [ ] Validate that the demo app runs locally from this repo with documented commands
-- [ ] Confirm the demo app is excluded from publishable package outputs where appropriate
-- [ ] Ensure the demo reinforces current component contracts rather than introducing a second source of truth
+- [x] Validate that the demo app runs locally from this repo with documented commands
+- [x] Confirm the demo app is excluded from publishable package outputs where appropriate
+- [x] Ensure the demo reinforces current component contracts rather than introducing a second source of truth
 
 ## Acceptance Criteria
-- [ ] A maintainer can run a local demo app directly from this repo
-- [ ] The demo app includes a composed view, component-gallery view, and state-scenarios view
-- [ ] The demo structure is easy to extend as more components are added
-- [ ] Neutral validation works with only this repo
-- [ ] Optional design-system-aware validation is possible without coupling the package itself to `@evergraytech/design-system`
+- [x] A maintainer can run a local demo app directly from this repo
+- [x] The demo app includes a composed view, component-gallery view, and state-scenarios view
+- [x] The demo structure is easy to extend as more components are added
+- [x] Neutral validation works with only this repo
+- [x] Optional design-system-aware validation is possible without coupling the package itself to `@evergraytech/design-system`
