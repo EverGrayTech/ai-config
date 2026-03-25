@@ -21,33 +21,33 @@ Define the provider/model registry and validation architecture for `@evergraytec
 ## Implementation Checklist
 
 ### 1. Provider Definitions
-- [ ] Define provider-definition contracts covering labels, BYOK support, credential hints, docs/help text, and validation hooks
-- [ ] Seed the initial built-in provider set for OpenAI, Anthropic, Google, and OpenRouter
-- [ ] Ensure provider ordering and host-level provider enablement can be controlled cleanly
+- [x] Define provider-definition contracts covering labels, BYOK support, credential hints, docs/help text, and validation hooks
+- [x] Seed the initial built-in provider set for OpenAI, Anthropic, Google, and OpenRouter
+- [x] Ensure provider ordering and host-level provider enablement can be controlled cleanly
 
 ### 2. Model Registry Behavior
-- [ ] Define model-descriptor contracts covering capabilities, context/output hints, status, and rough cost metadata
-- [ ] Implement provider-scoped model lookup and filtering behavior
-- [ ] Support host-app curation, aliasing, disabling, or override behavior for available models
+- [x] Define model-descriptor contracts covering capabilities, context/output hints, status, and rough cost metadata
+- [x] Implement provider-scoped model lookup and filtering behavior
+- [x] Support host-app curation, aliasing, disabling, or override behavior for available models
 
 ### 3. Validation Interfaces
-- [ ] Define validation result contracts and validation execution interfaces
-- [ ] Implement provider-level and host-overridable validation pathways
-- [ ] Ensure validation results can be stored and surfaced without leaking raw secrets
+- [x] Define validation result contracts and validation execution interfaces
+- [x] Implement provider-level and host-overridable validation pathways
+- [x] Ensure validation results can be stored and surfaced without leaking raw secrets
 
 ### 4. Usage/Cost Awareness Utilities
-- [ ] Implement helper behavior for distinguishing app-provided mode from BYOK mode
-- [ ] Support host-provided free-tier messaging and model-level cost hints where metadata exists
-- [ ] Provide warning/copy helpers for higher-cost selections without attempting exact metering
+- [x] Implement helper behavior for distinguishing app-provided mode from BYOK mode
+- [x] Support host-provided free-tier messaging and model-level cost hints where metadata exists
+- [x] Provide warning/copy helpers for higher-cost selections without attempting exact metering
 
 ### 5. Integration with Core State
-- [ ] Connect provider/model availability rules to normalization and selection behavior
-- [ ] Ensure invalid or unavailable stored providers/models fall back gracefully
-- [ ] Expose registry-aware helpers suitable for headless and future React usage
+- [x] Connect provider/model availability rules to normalization and selection behavior
+- [x] Ensure invalid or unavailable stored providers/models fall back gracefully
+- [x] Expose registry-aware helpers suitable for headless and future React usage
 
 ## Acceptance Criteria
-- [ ] Built-in providers and models can be queried through a reusable registry abstraction
-- [ ] Host apps can enable, filter, reorder, or override providers/models predictably
-- [ ] Validation is pluggable and stores safe result metadata without exposing credentials
-- [ ] Usage/cost messaging helpers support rough UX guidance without overreaching into metering
-- [ ] Registry behavior integrates cleanly with the headless state foundation
+- [x] Built-in providers and models can be queried through a reusable registry abstraction
+- [x] Host apps can enable, filter, reorder, or override providers/models predictably
+- [x] Validation is pluggable and stores safe result metadata without exposing credentials
+- [x] Usage/cost messaging helpers support rough UX guidance without overreaching into metering
+- [x] Registry behavior integrates cleanly with the headless state foundation

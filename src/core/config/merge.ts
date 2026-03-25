@@ -5,6 +5,7 @@ import {
   type AIProviderId,
 } from '../types/public';
 import { createDefaultAIConfigState } from './defaults';
+import { getAvailableModels } from '../providers/registry';
 
 function getAllowedProviders(appDefinition: AIConfigAppDefinition): Set<AIProviderId> {
   const providers = new Set<AIProviderId>();
@@ -58,6 +59,15 @@ export function normalizeAIConfigState(
   let selectedModel = state.selectedModel;
   if (mode === 'default' && appDefinition.defaultMode?.model) {
     selectedModel = appDefinition.defaultMode.model;
+  }
+
+  if (selectedProvider && selectedModel) {
+    const availableModels = getAvailableModels(selectedProvider, appDefinition);
+    const modelStillAvailable = availableModels.some((model) => model.id === selectedModel);
+
+    if (!modelStillAvailable) {
+      selectedModel = mode === 'default' ? appDefinition.defaultMode?.model ?? null : null;
+    }
   }
 
   return {

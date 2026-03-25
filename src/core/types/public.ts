@@ -62,6 +62,32 @@ export interface AIValidationResult {
   validatedAt?: string;
 }
 
+export interface AIProviderValidationInput {
+  apiKey: string;
+  provider: AIProviderId;
+}
+
+export type AIProviderValidationResolver = (
+  input: AIProviderValidationInput,
+) => Promise<AIValidationResult>;
+
+export interface AIProviderDefinition {
+  id: AIProviderId;
+  label: string;
+  credentialLabel: string;
+  credentialPlaceholder?: string;
+  supportsBYOK: boolean;
+  models: AIModelDescriptor[];
+  validateCredential?: AIProviderValidationResolver;
+  helpText?: string;
+  docsUrl?: string;
+}
+
+export interface AIProviderRegistryOptions {
+  providers?: AIProviderDefinition[];
+  overrides?: Partial<Record<AIProviderId, Partial<AIProviderDefinition>>>;
+}
+
 export interface AIDefaultModeDefinition {
   enabled: boolean;
   label: string;
@@ -82,6 +108,8 @@ export interface AIConfigAppDefinition {
   defaultMode?: AIDefaultModeDefinition;
   byok?: AIBYOKDefinition;
   modelFilter?: (model: AIModelDescriptor) => boolean;
+  providerOrder?: AIProviderId[];
+  providerOverrides?: Partial<Record<AIProviderId, Partial<AIProviderDefinition>>>;
   defaultGeneration?: AIGenerationSettings;
   usagePresentation?: AIUsagePresentation;
 }
