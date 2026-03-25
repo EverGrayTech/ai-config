@@ -1,16 +1,39 @@
 .eg-ai-config-panel {
+  --eg-ai-bg: var(--color-neutral-surface, transparent);
+  --eg-ai-text: var(--color-text-primary, inherit);
+  --eg-ai-border: var(--color-border-edge, rgba(0, 0, 0, 0.12));
+  --eg-ai-muted-border: var(--color-border-subtle, rgba(0, 0, 0, 0.2));
+  --eg-ai-radius: var(--radii-md, 12px);
+  --eg-ai-control-radius: var(--radii-sm, 8px);
+  --eg-ai-panel-gap: var(--spacing-lg, 1rem);
+  --eg-ai-section-gap: var(--spacing-md, 0.75rem);
+  --eg-ai-field-gap: var(--spacing-xs, 0.375rem);
+  --eg-ai-control-padding-block: var(--spacing-sm, 0.625rem);
+  --eg-ai-control-padding-inline: var(--spacing-md, 0.75rem);
+  --eg-ai-button-padding-inline: var(--spacing-md, 0.875rem);
+  --eg-ai-font-family: var(--typography-family-sans, inherit);
+  --eg-ai-font-size: var(--typography-size-sm, 0.9375rem);
+  --eg-ai-line-height: var(--typography-line-height-normal, 1.4);
+  --eg-ai-font-weight-strong: var(--typography-weight-semibold, 600);
+  --eg-ai-focus: var(--color-accent-solid, rgba(59, 130, 246, 0.85));
+  --eg-ai-hover-bg: var(--color-neutral-surface-raised, rgba(0, 0, 0, 0.04));
+  --eg-ai-disabled-opacity: 0.65;
+  --eg-ai-success: var(--color-semantic-success-foreground, rgba(34, 197, 94, 0.75));
+  --eg-ai-warning: var(--color-semantic-warning-foreground, rgba(245, 158, 11, 0.75));
+
   display: grid;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 12px;
-  background: transparent;
-  color: inherit;
+  gap: var(--eg-ai-panel-gap);
+  padding: var(--spacing-lg, 1rem);
+  border: 1px solid var(--eg-ai-border);
+  border-radius: var(--eg-ai-radius);
+  background: var(--eg-ai-bg);
+  color: var(--eg-ai-text);
+  font-family: var(--eg-ai-font-family);
 }
 
 .eg-ai-config-section {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--eg-ai-section-gap);
   margin: 0;
   padding: 0;
   border: 0;
@@ -19,65 +42,65 @@
 
 .eg-ai-config-field {
   display: grid;
-  gap: 0.375rem;
+  gap: var(--eg-ai-field-gap);
   font: inherit;
 }
 
 .eg-ai-config-choice {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm, 0.5rem);
 }
 
 .eg-ai-config-control {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  padding: 0.625rem 0.75rem;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  background: transparent;
-  color: inherit;
+  padding: var(--eg-ai-control-padding-block) var(--eg-ai-control-padding-inline);
+  border: 1px solid var(--eg-ai-muted-border);
+  border-radius: var(--eg-ai-control-radius);
+  background: var(--eg-ai-bg);
+  color: var(--eg-ai-text);
   font: inherit;
 }
 
 .eg-ai-config-control:focus-visible,
 .eg-ai-config-button:focus-visible {
-  outline: 2px solid rgba(59, 130, 246, 0.85);
+  outline: 2px solid var(--eg-ai-focus);
   outline-offset: 2px;
 }
 
 .eg-ai-config-control:disabled {
-  opacity: 0.65;
+  opacity: var(--eg-ai-disabled-opacity);
   cursor: not-allowed;
 }
 
 .eg-ai-config-help-text,
 .eg-ai-config-status,
 .eg-ai-config-usage-copy {
-  font-size: 0.9375rem;
-  line-height: 1.4;
+  font-size: var(--eg-ai-font-size);
+  line-height: var(--eg-ai-line-height);
 }
 
 .eg-ai-config-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--eg-ai-section-gap);
 }
 
 .eg-ai-config-button {
   appearance: none;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  background: transparent;
-  color: inherit;
-  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--eg-ai-muted-border);
+  border-radius: var(--eg-ai-control-radius);
+  background: var(--eg-ai-bg);
+  color: var(--eg-ai-text);
+  padding: var(--eg-ai-control-padding-block) var(--eg-ai-button-padding-inline);
   font: inherit;
   cursor: pointer;
 }
 
 .eg-ai-config-button:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--eg-ai-hover-bg);
 }
 
 .eg-ai-config-button-secondary {
@@ -94,18 +117,18 @@
 }
 
 .eg-ai-config-usage-title {
-  font-weight: 600;
+  font-weight: var(--eg-ai-font-weight-strong);
 }
 
 [data-eg-ai-config-status='saved'] {
-  border-left: 3px solid rgba(34, 197, 94, 0.75);
-  padding-left: 0.75rem;
+  border-left: 3px solid var(--eg-ai-success);
+  padding-left: var(--spacing-md, 0.75rem);
 }
 
 [data-eg-ai-config-status='missing'],
 [data-eg-ai-config-status='empty'] {
-  border-left: 3px solid rgba(245, 158, 11, 0.75);
-  padding-left: 0.75rem;
+  border-left: 3px solid var(--eg-ai-warning);
+  padding-left: var(--spacing-md, 0.75rem);
 }
 
 .eg-ai-config-reset-button {

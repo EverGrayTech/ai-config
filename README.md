@@ -143,11 +143,13 @@ export function AISettingsCard() {
 ## Styling and theming guidance
 
 - import the neutral base stylesheet with `import '@evergraytech/ai-config/styles/base.css';`
+- if your app already imports `@evergraytech/design-system/dist/variables.css`, ai-config styles will automatically bridge to those CSS variables where available
 - built-in React components are intentionally lightly styled
 - wrap components in your design-system primitives where needed
 - prefer using the headless layer if a host app needs fully custom layout or behavior
 - current components are designed to remain usable in dark-theme and restrained UI contexts
 - stable class names and `data-*` hooks are provided for targeted overrides
+- ai-config does not import or depend on `@evergraytech/design-system`; alignment is purely via optional CSS variable presence
 
 ### Styling contract
 
@@ -158,6 +160,20 @@ export function AISettingsCard() {
 - actions row: `.eg-ai-config-actions` with `data-eg-ai-config-actions`
 - buttons: `.eg-ai-config-button`
 - status messaging: `.eg-ai-config-status` with `data-eg-ai-config-status`
+
+### Optional design-system-aware styling
+
+When a host app has already loaded EverGray Tech design-system variables, the base stylesheet bridges to them through AI-scoped variables such as:
+
+- `--eg-ai-bg`
+- `--eg-ai-text`
+- `--eg-ai-border`
+- `--eg-ai-muted-border`
+- `--eg-ai-focus`
+- `--eg-ai-success`
+- `--eg-ai-warning`
+
+Those AI-scoped variables resolve to design-system CSS variables when available and fall back to neutral values when not. Third-party apps can override the AI-scoped variables directly without depending on EverGray Tech tokens.
 
 ## Local-first credential caveat
 
