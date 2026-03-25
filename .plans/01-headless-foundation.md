@@ -22,33 +22,33 @@ Establish the typed, local-first headless foundation for `@evergraytech/ai-confi
 ## Implementation Checklist
 
 ### 1. Public Core Types
-- [ ] Define canonical configuration, credential, generation, validation, usage-presentation, and app-definition types
-- [ ] Define schema-versioned persisted payload types and any normalization-related helper types
-- [ ] Separate public types from internal helper types so exports remain intentional
+- [x] Define canonical configuration, credential, generation, validation, usage-presentation, and app-definition types
+- [x] Define schema-versioned persisted payload types and any normalization-related helper types
+- [x] Separate public types from internal helper types so exports remain intentional
 
 ### 2. Default State and Merge Logic
-- [ ] Implement package-default state creation for the headless layer
-- [ ] Implement host-app-definition merge behavior with documented precedence rules
-- [ ] Implement normalization logic that corrects invalid provider/model/mode combinations safely
+- [x] Implement package-default state creation for the headless layer
+- [x] Implement host-app-definition merge behavior with documented precedence rules
+- [x] Implement normalization logic that corrects invalid provider/model/mode combinations safely
 
 ### 3. Storage Abstraction
-- [ ] Define a storage adapter contract for load/save/clear operations
-- [ ] Implement a browser `localStorage` adapter with configurable key namespace
-- [ ] Ensure storage access is SSR-safe and fails gracefully when browser storage is unavailable
+- [x] Define a storage adapter contract for load/save/clear operations
+- [x] Implement a browser `localStorage` adapter with configurable key namespace
+- [x] Ensure storage access is SSR-safe and fails gracefully when browser storage is unavailable
 
 ### 4. Persistence and Recovery
-- [ ] Implement versioned persistence helpers for load/save/clear workflows
-- [ ] Handle corrupted or invalid stored payloads without crashing consuming apps
-- [ ] Establish basic schema-migration posture for future state evolution
+- [x] Implement versioned persistence helpers for load/save/clear workflows
+- [x] Handle corrupted or invalid stored payloads without crashing consuming apps
+- [x] Establish basic schema-migration posture for future state evolution
 
 ### 5. Headless Manager and Utilities
-- [ ] Implement state transition helpers for mode, provider, model, credential, and generation updates
-- [ ] Provide a headless manager or equivalent subscription-friendly API for reading/updating/persisting state
-- [ ] Add redaction and debug-sanitization helpers that never expose raw secrets
+- [x] Implement state transition helpers for mode, provider, model, credential, and generation updates
+- [x] Provide a headless manager or equivalent subscription-friendly API for reading/updating/persisting state
+- [x] Add redaction and debug-sanitization helpers that never expose raw secrets
 
 ## Acceptance Criteria
-- [ ] A consuming app can create and normalize AI config state without any React dependency
-- [ ] Package defaults, app defaults, and persisted user state merge in a deterministic order
-- [ ] Local persistence works behind an adapter and recovers safely from unavailable/corrupt storage
-- [ ] Core update actions exist for the primary state transitions required by the package
-- [ ] Debug and helper utilities avoid exposing raw credentials
+- [x] A consuming app can create and normalize AI config state without any React dependency
+- [x] Package defaults, app defaults, and persisted user state merge in a deterministic order
+- [x] Local persistence works behind an adapter and recovers safely from unavailable/corrupt storage
+- [x] Core update actions exist for the primary state transitions required by the package
+- [x] Debug and helper utilities avoid exposing raw credentials
