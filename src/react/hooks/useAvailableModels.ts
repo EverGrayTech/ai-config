@@ -1,7 +1,7 @@
 'use client';
 
-import { getAvailableModels, type AIModelDescriptor } from '../../index';
-import { useAIConfigAppDefinition, useAIConfig } from '../context/AIConfigContext';
+import { type AIModelDescriptor, getAvailableModels } from '../../index';
+import { useAIConfig, useAIConfigAppDefinition } from '../context/AIConfigContext';
 
 export function useAvailableModels(): AIModelDescriptor[] {
   const appDefinition = useAIConfigAppDefinition();

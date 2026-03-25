@@ -1,12 +1,12 @@
+import { createDefaultAIConfigState, createPersistedAIConfigPayload } from '../config/defaults';
+import { mergeAIConfigWithAppDefinition } from '../config/merge';
 import {
-  AI_CONFIG_SCHEMA_VERSION,
   type AIConfigAppDefinition,
   type AIConfigState,
   type AIConfigStorageAdapter,
   type AIPersistedConfigPayload,
+  AI_CONFIG_SCHEMA_VERSION,
 } from '../types/public';
-import { createDefaultAIConfigState, createPersistedAIConfigPayload } from '../config/defaults';
-import { mergeAIConfigWithAppDefinition } from '../config/merge';
 
 function isPersistedPayload(value: unknown): value is AIPersistedConfigPayload {
   if (!value || typeof value !== 'object') {

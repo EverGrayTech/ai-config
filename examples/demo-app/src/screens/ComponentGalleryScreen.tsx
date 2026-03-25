@@ -1,14 +1,14 @@
 import React from 'react';
 
-import { type AIConfigAppDefinition } from '@evergraytech/ai-config';
+import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
 import {
   AIApiKeyField,
-  AICredentialStatus,
-  AIGenerationSettingsForm,
   AIConfigProvider,
   AIConfigResetButton,
-  AIModelSelector,
+  AICredentialStatus,
+  AIGenerationSettingsForm,
   AIModeSelector,
+  AIModelSelector,
   AIProviderSelector,
   AIUsageHint,
 } from '@evergraytech/ai-config/react';
@@ -38,7 +38,10 @@ export function ComponentGalleryScreen({ appDefinition }: ComponentGalleryScreen
           <AIGenerationSettingsForm />
         </AIConfigProvider>
       </DemoCard>
-      <DemoCard title="Credential management" description="Switch to BYOK and select a provider to interact with the API key field.">
+      <DemoCard
+        title="Credential management"
+        description="Switch to BYOK and select a provider to interact with the API key field."
+      >
         <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
           <AIModeSelector />
           <AIProviderSelector />

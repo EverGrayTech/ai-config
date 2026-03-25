@@ -1,15 +1,16 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createAIConfigManager, type AIConfigAppDefinition } from '../../src';
+import { cleanup } from '@testing-library/react';
+import { type AIConfigAppDefinition, createAIConfigManager } from '../../src';
 import {
+  AIConfigPanel,
+  AIConfigProvider,
   AICredentialStatus,
   AIGenerationSettingsForm,
   AIUsageHint,
-  AIConfigPanel,
-  AIConfigProvider,
   useAIConfig,
   useAIConfigActions,
   useAIConfigAppDefinition,
@@ -17,7 +18,6 @@ import {
   useAvailableModels,
   useAvailableProviders,
 } from '../../src/react';
-import { cleanup } from '@testing-library/react';
 
 afterEach(() => {
   cleanup();
@@ -106,7 +106,9 @@ describe('AIConfigPanel', () => {
 
     expect(screen.getByTestId('state-probe').textContent).toContain('"mode":"byok"');
     expect(screen.getByTestId('state-probe').textContent).toContain('"selectedProvider":"openai"');
-    expect(screen.getByTestId('state-probe').textContent).toContain('"selectedModel":"gpt-4.1-mini"');
+    expect(screen.getByTestId('state-probe').textContent).toContain(
+      '"selectedModel":"gpt-4.1-mini"',
+    );
     expect(screen.getByTestId('state-probe').textContent).toContain('"temperature":0.9');
   });
 
@@ -201,7 +203,10 @@ describe('AIConfigPanel', () => {
     const reasoningSelect = screen.getByLabelText('Reasoning preset');
     await user.selectOptions(reasoningSelect, 'high');
     expect((reasoningSelect as HTMLSelectElement).value).toBe('high');
-    expect(screen.getByText('No saved API key for this provider.')).toHaveAttribute('data-eg-ai-config-status', 'missing');
+    expect(screen.getByText('No saved API key for this provider.')).toHaveAttribute(
+      'data-eg-ai-config-status',
+      'missing',
+    );
   });
 
   it('exposes stable styling hooks for key sections and actions', async () => {
@@ -213,11 +218,20 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    expect(screen.getByLabelText('AI provider').closest('[data-eg-ai-config-field="provider"]')).not.toBeNull();
-    expect(screen.getByLabelText('AI model').closest('[data-eg-ai-config-field="model"]')).not.toBeNull();
-    expect(screen.getByText('Reset AI settings')).toHaveAttribute('data-eg-ai-config-action', 'reset');
+    expect(
+      screen.getByLabelText('AI provider').closest('[data-eg-ai-config-field="provider"]'),
+    ).not.toBeNull();
+    expect(
+      screen.getByLabelText('AI model').closest('[data-eg-ai-config-field="model"]'),
+    ).not.toBeNull();
+    expect(screen.getByText('Reset AI settings')).toHaveAttribute(
+      'data-eg-ai-config-action',
+      'reset',
+    );
 
     await user.click(screen.getByLabelText('Bring your own key'));
-    expect(screen.getByText('Save key').closest('[data-eg-ai-config-actions="api-key"]')).not.toBeNull();
+    expect(
+      screen.getByText('Save key').closest('[data-eg-ai-config-actions="api-key"]'),
+    ).not.toBeNull();
   });
 });

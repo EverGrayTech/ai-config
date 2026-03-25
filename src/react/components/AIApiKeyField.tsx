@@ -8,8 +8,9 @@ export function AIApiKeyField() {
   const state = useAIConfigState();
   const actions = useAIConfigActions();
   const [value, setValue] = useState('');
+  const selectedProvider = state.selectedProvider;
 
-  if (!state.selectedProvider || state.mode !== 'byok') {
+  if (!selectedProvider || state.mode !== 'byok') {
     return null;
   }
 
@@ -30,12 +31,20 @@ export function AIApiKeyField() {
         Stored locally in your browser for this device.
       </div>
       <div className="eg-ai-config-actions" data-eg-ai-config-actions="api-key">
-      <button className="eg-ai-config-button" type="button" onClick={() => actions.setCredential(state.selectedProvider!, { apiKey: value })}>
-        Save key
-      </button>
-      <button className="eg-ai-config-button eg-ai-config-button-secondary" type="button" onClick={() => actions.clearCredential(state.selectedProvider!)}>
-        Clear key
-      </button>
+        <button
+          className="eg-ai-config-button"
+          type="button"
+          onClick={() => actions.setCredential(selectedProvider, { apiKey: value })}
+        >
+          Save key
+        </button>
+        <button
+          className="eg-ai-config-button eg-ai-config-button-secondary"
+          type="button"
+          onClick={() => actions.clearCredential(selectedProvider)}
+        >
+          Clear key
+        </button>
       </div>
     </div>
   );

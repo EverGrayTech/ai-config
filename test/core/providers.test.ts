@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  type AIConfigAppDefinition,
   builtInProviders,
   createProviderRegistry,
   getAIUsagePresentation,
@@ -11,7 +12,6 @@ import {
   getProviderById,
   isAppProvidedMode,
   validateCredential,
-  type AIConfigAppDefinition,
 } from '../../src';
 
 describe('provider registry and validation', () => {
@@ -165,23 +165,19 @@ describe('provider registry and validation', () => {
   });
 
   it('uses provider-level validation when configured via overrides', async () => {
-    const result = await validateCredential(
-      'openai',
-      'sk-valid-123',
-      {
-        ...appDefinition,
-        providerOverrides: {
-          openai: {
-            validateCredential: async ({ apiKey }) => ({
-              ok: apiKey.startsWith('sk-valid'),
-              status: apiKey.startsWith('sk-valid') ? 'valid' : 'invalid',
-              message: 'Validated by override.',
-              validatedAt: '2026-03-25T00:00:00.000Z',
-            }),
-          },
+    const result = await validateCredential('openai', 'sk-valid-123', {
+      ...appDefinition,
+      providerOverrides: {
+        openai: {
+          validateCredential: async ({ apiKey }) => ({
+            ok: apiKey.startsWith('sk-valid'),
+            status: apiKey.startsWith('sk-valid') ? 'valid' : 'invalid',
+            message: 'Validated by override.',
+            validatedAt: '2026-03-25T00:00:00.000Z',
+          }),
         },
       },
-    );
+    });
 
     expect(result.ok).toBe(true);
     expect(result.status).toBe('valid');
@@ -195,23 +191,18 @@ describe('provider registry and validation', () => {
   });
 
   it('supports validation through registry option overrides', async () => {
-    const result = await validateCredential(
-      'openai',
-      'AIza-valid-key',
-      appDefinition,
-      {
-        overrides: {
-          openai: {
-            validateCredential: async ({ apiKey }) => ({
-              ok: apiKey.startsWith('AIza'),
-              status: apiKey.startsWith('AIza') ? 'valid' : 'invalid',
-              message: 'Validated via registry override.',
-              validatedAt: '2026-03-25T00:00:00.000Z',
-            }),
-          },
+    const result = await validateCredential('openai', 'AIza-valid-key', appDefinition, {
+      overrides: {
+        openai: {
+          validateCredential: async ({ apiKey }) => ({
+            ok: apiKey.startsWith('AIza'),
+            status: apiKey.startsWith('AIza') ? 'valid' : 'invalid',
+            message: 'Validated via registry override.',
+            validatedAt: '2026-03-25T00:00:00.000Z',
+          }),
         },
       },
-    );
+    });
 
     expect(result.ok).toBe(true);
     expect(result.message).toContain('registry override');

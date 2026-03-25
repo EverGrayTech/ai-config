@@ -120,13 +120,13 @@
   font-weight: var(--eg-ai-font-weight-strong);
 }
 
-[data-eg-ai-config-status='saved'] {
+[data-eg-ai-config-status="saved"] {
   border-left: 3px solid var(--eg-ai-success);
   padding-left: var(--spacing-md, 0.75rem);
 }
 
-[data-eg-ai-config-status='missing'],
-[data-eg-ai-config-status='empty'] {
+[data-eg-ai-config-status="missing"],
+[data-eg-ai-config-status="empty"] {
   border-left: 3px solid var(--eg-ai-warning);
   padding-left: var(--spacing-md, 0.75rem);
 }

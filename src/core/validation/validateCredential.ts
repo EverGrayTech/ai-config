@@ -1,3 +1,4 @@
+import { getProviderById } from '../providers/registry';
 import type {
   AIConfigAppDefinition,
   AIProviderDefinition,
@@ -5,7 +6,6 @@ import type {
   AIProviderRegistryOptions,
   AIValidationResult,
 } from '../types/public';
-import { getProviderById } from '../providers/registry';
 
 function getDefaultValidationMessage(provider: AIProviderDefinition): string {
   return `${provider.label} credential validation is not configured.`;

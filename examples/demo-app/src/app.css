@@ -47,7 +47,7 @@ body {
   text-align: left;
 }
 
-.demo-nav button[data-active='true'] {
+.demo-nav button[data-active="true"] {
   background: rgba(58, 122, 187, 0.2);
   border-color: rgba(58, 122, 187, 0.5);
 }

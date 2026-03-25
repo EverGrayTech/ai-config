@@ -5,7 +5,13 @@ import '../../../styles/base.css';
 import App from './App';
 import './app.css';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  throw new Error('Missing #root element for demo app bootstrap.');
+}
+
+ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,

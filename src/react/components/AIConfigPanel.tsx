@@ -3,11 +3,11 @@
 import React from 'react';
 
 import { AIApiKeyField } from './AIApiKeyField';
-import { AICredentialStatus } from './AICredentialStatus';
 import { AIConfigResetButton } from './AIConfigResetButton';
+import { AICredentialStatus } from './AICredentialStatus';
 import { AIGenerationSettingsForm } from './AIGenerationSettingsForm';
-import { AIModelSelector } from './AIModelSelector';
 import { AIModeSelector } from './AIModeSelector';
+import { AIModelSelector } from './AIModelSelector';
 import { AIProviderSelector } from './AIProviderSelector';
 import { AIUsageHint } from './AIUsageHint';
 

@@ -17,14 +17,8 @@
     },
     "./styles/base.css": "./styles/base.css"
   },
-  "sideEffects": [
-    "./styles/base.css"
-  ],
-  "files": [
-    "dist",
-    "styles",
-    "README.md"
-  ],
+  "sideEffects": ["./styles/base.css"],
+  "files": ["dist", "styles", "README.md"],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },

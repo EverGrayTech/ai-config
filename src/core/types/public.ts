@@ -2,13 +2,7 @@ export const AI_CONFIG_SCHEMA_VERSION = 1;
 
 export type AIConfigMode = 'default' | 'byok';
 
-export type AIProviderId =
-  | 'openai'
-  | 'anthropic'
-  | 'google'
-  | 'openrouter'
-  | 'custom'
-  | 'hosted';
+export type AIProviderId = 'openai' | 'anthropic' | 'google' | 'openrouter' | 'custom' | 'hosted';
 
 export interface AIModelCapabilities {
   text?: boolean;

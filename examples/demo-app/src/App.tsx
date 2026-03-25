@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-import { type AIConfigAppDefinition } from '@evergraytech/ai-config';
+import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
 
 import { DemoNav } from './components/DemoNav';
 import { DemoShell } from './components/DemoShell';
@@ -46,7 +46,9 @@ export default function App() {
     <div className={`demo-app${designSystemMode ? ' demo-design-system' : ''}`}>
       <aside className="demo-sidebar">
         <h1>AI Config Demo</h1>
-        <p className="demo-note">Local validation harness for composed flows, individual components, and scenario states.</p>
+        <p className="demo-note">
+          Local validation harness for composed flows, individual components, and scenario states.
+        </p>
         <DemoNav screens={screens} activeScreen={screen} onSelect={setScreen} />
       </aside>
       <DemoShell

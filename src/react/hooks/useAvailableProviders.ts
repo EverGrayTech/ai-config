@@ -1,6 +1,6 @@
 'use client';
 
-import { getAvailableProviders, type AIProviderDefinition } from '../../index';
+import { type AIProviderDefinition, getAvailableProviders } from '../../index';
 import { useAIConfigAppDefinition } from '../context/AIConfigContext';
 
 export function useAvailableProviders(): AIProviderDefinition[] {

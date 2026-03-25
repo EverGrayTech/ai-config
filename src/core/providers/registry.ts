@@ -18,7 +18,9 @@ function mergeProviderDefinition(
   };
 }
 
-export function createProviderRegistry(options: AIProviderRegistryOptions = {}): AIProviderDefinition[] {
+export function createProviderRegistry(
+  options: AIProviderRegistryOptions = {},
+): AIProviderDefinition[] {
   const baseProviders = options.providers ?? builtInProviders;
 
   return baseProviders.map((provider) =>
@@ -81,7 +83,9 @@ export function getProviderById(
   appDefinition?: AIConfigAppDefinition,
   options?: AIProviderRegistryOptions,
 ): AIProviderDefinition | undefined {
-  return getAvailableProviders(appDefinition, options).find((provider) => provider.id === providerId);
+  return getAvailableProviders(appDefinition, options).find(
+    (provider) => provider.id === providerId,
+  );
 }
 
 export function getAvailableModels(
@@ -110,5 +114,7 @@ export function getModelById(
   appDefinition?: AIConfigAppDefinition,
   options?: AIProviderRegistryOptions,
 ): AIModelDescriptor | undefined {
-  return getAvailableModels(providerId, appDefinition, options).find((model) => model.id === modelId);
+  return getAvailableModels(providerId, appDefinition, options).find(
+    (model) => model.id === modelId,
+  );
 }

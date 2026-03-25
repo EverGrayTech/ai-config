@@ -46,6 +46,14 @@ export {
   createLocalStorageAIConfigStorageAdapter,
 } from './core/storage/localStorage';
 export { clearAIConfig, loadAIConfig, saveAIConfig } from './core/storage/persistence';
-export { isProviderConfigured, redactCredential, sanitizeAIConfigForDebug } from './core/utils/redaction';
+export {
+  isProviderConfigured,
+  redactCredential,
+  sanitizeAIConfigForDebug,
+} from './core/utils/redaction';
 export { validateCredential } from './core/validation/validateCredential';
-export { getAIUsagePresentation, getModelCostWarning, isAppProvidedMode } from './core/usage/presentation';
+export {
+  getAIUsagePresentation,
+  getModelCostWarning,
+  isAppProvidedMode,
+} from './core/usage/presentation';

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import {
   type AIConfigAppDefinition,
@@ -59,7 +60,11 @@ export function AIConfigProvider({
     void resolvedManager.load();
   }, [loadOnMount, resolvedManager]);
 
-  return <AIConfigContext.Provider value={{ manager: resolvedManager, state }}>{children}</AIConfigContext.Provider>;
+  return (
+    <AIConfigContext.Provider value={{ manager: resolvedManager, state }}>
+      {children}
+    </AIConfigContext.Provider>
+  );
 }
 
 export function useAIConfigAppDefinition(): AIConfigAppDefinition {

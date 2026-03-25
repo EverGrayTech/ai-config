@@ -1,3 +1,5 @@
+import { createLocalStorageAIConfigStorageAdapter } from '../storage/localStorage';
+import { clearAIConfig, loadAIConfig, saveAIConfig } from '../storage/persistence';
 import type {
   AIConfigManager,
   AIConfigManagerOptions,
@@ -17,8 +19,6 @@ import {
   updateAIConfigGeneration,
 } from './actions';
 import { mergeAIConfigWithAppDefinition } from './merge';
-import { clearAIConfig, loadAIConfig, saveAIConfig } from '../storage/persistence';
-import { createLocalStorageAIConfigStorageAdapter } from '../storage/localStorage';
 
 export function createAIConfigManager(options: AIConfigManagerOptions): AIConfigManager {
   const storage: AIConfigStorageAdapter =
@@ -52,7 +52,10 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
     setModel(modelId) {
       return assign(setAIConfigModel(state, options.appDefinition, modelId));
     },
-    setCredential(provider: AIProviderId, credential: Pick<AICredentialRecord, 'apiKey' | 'label'>) {
+    setCredential(
+      provider: AIProviderId,
+      credential: Pick<AICredentialRecord, 'apiKey' | 'label'>,
+    ) {
       return assign(setAIConfigCredential(state, provider, credential));
     },
     clearCredential(provider: AIProviderId) {

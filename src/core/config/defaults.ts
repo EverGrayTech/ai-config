@@ -1,14 +1,12 @@
 import {
-  AI_CONFIG_SCHEMA_VERSION,
   type AIConfigAppDefinition,
   type AIConfigMode,
   type AIConfigState,
   type AIPersistedConfigPayload,
+  AI_CONFIG_SCHEMA_VERSION,
 } from '../types/public';
 
-export function createDefaultAIConfigState(
-  appDefinition?: AIConfigAppDefinition,
-): AIConfigState {
+export function createDefaultAIConfigState(appDefinition?: AIConfigAppDefinition): AIConfigState {
   const hasDefaultMode = appDefinition?.defaultMode?.enabled ?? true;
   const defaultMode: AIConfigMode = hasDefaultMode ? 'default' : 'byok';
 
@@ -24,9 +22,7 @@ export function createDefaultAIConfigState(
   };
 }
 
-export function createPersistedAIConfigPayload(
-  state: AIConfigState,
-): AIPersistedConfigPayload {
+export function createPersistedAIConfigPayload(state: AIConfigState): AIPersistedConfigPayload {
   return {
     schemaVersion: AI_CONFIG_SCHEMA_VERSION,
     state,

@@ -1,7 +1,4 @@
-import type {
-  AIConfigStorageAdapter,
-  AIPersistedConfigPayload,
-} from '../types/public';
+import type { AIConfigStorageAdapter, AIPersistedConfigPayload } from '../types/public';
 
 const DEFAULT_STORAGE_KEY = 'evergray:ai-config';
 

@@ -1,25 +1,25 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  type AIConfigAppDefinition,
+  type AIConfigState,
+  type AIConfigStorageAdapter,
   clearAIConfig,
   clearAIConfigCredential,
   createAIConfigManager,
-  createLocalStorageAIConfigStorageAdapter,
   createDefaultAIConfigState,
+  createLocalStorageAIConfigStorageAdapter,
   loadAIConfig,
   mergeAIConfigWithAppDefinition,
   redactCredential,
   resetAIConfigState,
   sanitizeAIConfigForDebug,
   saveAIConfig,
-  setAIConfigModel,
   setAIConfigCredential,
   setAIConfigMode,
+  setAIConfigModel,
   setAIConfigProvider,
   updateAIConfigGeneration,
-  type AIConfigAppDefinition,
-  type AIConfigState,
-  type AIConfigStorageAdapter,
 } from '../../src';
 
 const appDefinition: AIConfigAppDefinition = {
@@ -337,7 +337,9 @@ describe('headless foundation', () => {
     const adapter = createLocalStorageAIConfigStorageAdapter('ssr-test-key');
 
     expect(adapter.load()).toBeNull();
-    expect(() => adapter.save({ schemaVersion: 1, state: createDefaultAIConfigState(appDefinition) })).not.toThrow();
+    expect(() =>
+      adapter.save({ schemaVersion: 1, state: createDefaultAIConfigState(appDefinition) }),
+    ).not.toThrow();
     expect(() => adapter.clear()).not.toThrow();
   });
 

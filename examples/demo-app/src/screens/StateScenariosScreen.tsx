@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createAIConfigManager, type AIConfigAppDefinition } from '@evergraytech/ai-config';
+import { type AIConfigAppDefinition, createAIConfigManager } from '@evergraytech/ai-config';
 import { AIConfigPanel, AIConfigProvider } from '@evergraytech/ai-config/react';
 
 import { DemoCard } from '../components/DemoCard';
@@ -9,7 +9,10 @@ type StateScenariosScreenProps = {
   appDefinition: AIConfigAppDefinition;
 };
 
-function createScenarioManager(appDefinition: AIConfigAppDefinition, configure: (manager: ReturnType<typeof createAIConfigManager>) => void) {
+function createScenarioManager(
+  appDefinition: AIConfigAppDefinition,
+  configure: (manager: ReturnType<typeof createAIConfigManager>) => void,
+) {
   const manager = createAIConfigManager({ appDefinition });
   configure(manager);
   return manager;
@@ -39,7 +42,11 @@ export function StateScenariosScreen({ appDefinition }: StateScenariosScreenProp
   return (
     <div className="demo-grid">
       <DemoCard title="Default mode">
-        <AIConfigProvider appDefinition={appDefinition} manager={defaultManager} loadOnMount={false}>
+        <AIConfigProvider
+          appDefinition={appDefinition}
+          manager={defaultManager}
+          loadOnMount={false}
+        >
           <AIConfigPanel />
         </AIConfigProvider>
       </DemoCard>
@@ -49,7 +56,11 @@ export function StateScenariosScreen({ appDefinition }: StateScenariosScreenProp
         </AIConfigProvider>
       </DemoCard>
       <DemoCard title="Saved key + validation state">
-        <AIConfigProvider appDefinition={appDefinition} manager={savedKeyManager} loadOnMount={false}>
+        <AIConfigProvider
+          appDefinition={appDefinition}
+          manager={savedKeyManager}
+          loadOnMount={false}
+        >
           <AIConfigPanel />
         </AIConfigProvider>
       </DemoCard>
