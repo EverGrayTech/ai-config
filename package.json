@@ -1,0 +1,31 @@
+{
+  "name": "@evergraytech/ai-config",
+  "version": "0.1.0",
+  "description": "Local-first AI configuration layer enabling zero-setup defaults and optional bring-your-own-key model access across providers",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {},
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EverGrayTech/ai-config.git"
+  },
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "test": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.2",
+    "react": "^19.1.0",
+    "style-dictionary": "^4",
+    "typescript": "^5.8.2"
+  }
+}
