@@ -39,7 +39,7 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
     return state;
   };
 
-  return {
+  const manager: AIConfigManager & { options?: AIConfigManagerOptions } = {
     getState() {
       return state;
     },
@@ -83,4 +83,8 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       assign(resetAIConfigState(options.appDefinition));
     },
   };
+
+  manager.options = options;
+
+  return manager;
 }

@@ -405,14 +405,14 @@ describe('headless foundation', () => {
   });
 
   it('supports async manager persistence methods', async () => {
-    let savedPayload: { state: AIConfigState } | null = null;
+    const savedPayloadRef: { current: { state: AIConfigState } | null } = { current: null };
     const storage: AIConfigStorageAdapter = {
       load: async () => null,
       save: async (payload) => {
-        savedPayload = { state: payload.state };
+        savedPayloadRef.current = { state: payload.state };
       },
       clear: async () => {
-        savedPayload = null;
+        savedPayloadRef.current = null;
       },
     };
 
@@ -425,13 +425,14 @@ describe('headless foundation', () => {
     manager.setProvider('openai');
     await manager.save();
 
-    expect(savedPayload).not.toBeNull();
-    if (!savedPayload) {
+    expect(savedPayloadRef.current).not.toBeNull();
+    if (savedPayloadRef.current === null) {
       throw new Error('Expected saved state to be present');
     }
-    expect(savedPayload.state.selectedProvider).toBe('openai');
+    const persistedState = savedPayloadRef.current.state;
+    expect(persistedState.selectedProvider).toBe('openai');
 
     await manager.clearPersisted();
-    expect(savedPayload).toBeNull();
+    expect(savedPayloadRef.current).toBeNull();
   });
 });

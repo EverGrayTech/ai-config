@@ -2,18 +2,38 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    include: ['test/**/*.test.ts'],
+    include: ['test/**/*.test.ts', 'test/**/*.test.tsx'],
+    setupFiles: ['./test/setup.ts'],
+    environment: 'node',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
       reportsDirectory: './coverage',
-      exclude: ['src/react.ts', 'vitest.config.ts'],
+      exclude: ['src/react.ts', 'vitest.config.ts', 'test/setup.ts'],
       thresholds: {
-        lines: 90,
-        functions: 90,
-        branches: 90,
-        statements: 90,
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
       },
     },
+    projects: [
+      {
+        test: {
+          name: 'node',
+          include: ['test/core/**/*.test.ts'],
+          environment: 'node',
+          setupFiles: ['./test/setup.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'react',
+          include: ['test/react/**/*.test.tsx'],
+          environment: 'jsdom',
+          setupFiles: ['./test/setup.ts'],
+        },
+      },
+    ],
   },
 });

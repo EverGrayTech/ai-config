@@ -22,33 +22,33 @@ Add the optional React integration layer for `@evergraytech/ai-config` so EverGr
 ## Implementation Checklist
 
 ### 1. React State Integration
-- [ ] Implement React-facing state hooks for reading config state and dispatching updates
-- [ ] Provide a context/provider pattern if it meaningfully reduces integration burden
-- [ ] Ensure client-only behavior is isolated appropriately for storage-backed interactions
+- [x] Implement React-facing state hooks for reading config state and dispatching updates
+- [x] Provide a context/provider pattern if it meaningfully reduces integration burden
+- [x] Ensure client-only behavior is isolated appropriately for storage-backed interactions
 
 ### 2. Core Settings Components
-- [ ] Implement mode, provider, model, API-key, generation-settings, usage-hint, credential-status, and reset components
-- [ ] Make components controlled or easy to use in controlled integration patterns
-- [ ] Ensure component APIs align with headless state/action concepts rather than duplicating logic
+- [x] Implement mode, provider, model, API-key, generation-settings, usage-hint, credential-status, and reset components
+- [x] Make components controlled or easy to use in controlled integration patterns
+- [x] Ensure component APIs align with headless state/action concepts rather than duplicating logic
 
 ### 3. Composed Panel Experience
-- [ ] Implement an `AIConfigPanel` composition for common settings-screen use cases
-- [ ] Ensure the panel can show app-provided mode, BYOK posture, validation state, and usage/cost hints coherently
-- [ ] Keep composition flexible enough for consuming apps to hide or replace sections
+- [x] Implement an `AIConfigPanel` composition for common settings-screen use cases
+- [x] Ensure the panel can show app-provided mode, BYOK posture, validation state, and usage/cost hints coherently
+- [x] Keep composition flexible enough for consuming apps to hide or replace sections
 
 ### 4. Accessibility and Theming Posture
-- [ ] Provide proper labels, descriptions, validation messaging, and keyboard support across components
-- [ ] Keep styling restrained and non-invasive so host apps can match their existing system
-- [ ] Ensure the UI remains workable in dark-theme and low-assumption design-system environments
+- [x] Provide proper labels, descriptions, validation messaging, and keyboard support across components
+- [x] Keep styling restrained and non-invasive so host apps can match their existing system
+- [x] Ensure the UI remains workable in dark-theme and low-assumption design-system environments
 
 ### 5. React Export Surface
-- [ ] Separate React exports from headless exports cleanly
-- [ ] Ensure safe import posture for SSR/build contexts in Next.js-style apps
-- [ ] Document expected usage patterns for hooks, provider, and components
+- [x] Separate React exports from headless exports cleanly
+- [x] Ensure safe import posture for SSR/build contexts in Next.js-style apps
+- [x] Document expected usage patterns for hooks, provider, and components
 
 ## Acceptance Criteria
-- [ ] A React app can consume AI config state through package hooks or provider-based integration
-- [ ] The package exposes the minimum targeted settings components and a composed settings panel
-- [ ] Components are accessible, lightly styled, and practical to theme in consuming apps
-- [ ] React exports remain clearly separated from the headless/core API
-- [ ] Common settings flows work without forcing apps into a rigid UI structure
+- [x] A React app can consume AI config state through package hooks or provider-based integration
+- [x] The package exposes the minimum targeted settings components and a composed settings panel
+- [x] Components are accessible, lightly styled, and practical to theme in consuming apps
+- [x] React exports remain clearly separated from the headless/core API
+- [x] Common settings flows work without forcing apps into a rigid UI structure
