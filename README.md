@@ -33,6 +33,120 @@ It is not intended to be the full AI execution runtime. It manages configuration
 - rough usage and cost-awareness messaging
 - headless and React-friendly integration paths
 
+## Installation
+
+```bash
+pnpm add @evergraytech/ai-config react
+```
+
+Use the headless API from `@evergraytech/ai-config` and the optional React layer from `@evergraytech/ai-config/react`.
+
+## Headless usage example
+
+```ts
+import {
+  createAIConfigManager,
+  getAvailableModels,
+  validateCredential,
+  type AIConfigAppDefinition,
+} from '@evergraytech/ai-config';
+
+const appDefinition: AIConfigAppDefinition = {
+  appId: 'plot-your-path',
+  defaultMode: {
+    enabled: true,
+    label: 'EverGray Tech default AI',
+    provider: 'hosted',
+    model: 'evergray-tech-default',
+    usageHint: 'Free usage is limited by the host app.',
+  },
+  byok: {
+    enabled: true,
+    providers: ['openai', 'anthropic'],
+  },
+  defaultGeneration: {
+    temperature: 0.4,
+    maxOutputTokens: 800,
+  },
+};
+
+const manager = createAIConfigManager({ appDefinition });
+
+manager.setMode('byok');
+manager.setProvider('openai');
+manager.setModel(getAvailableModels('openai', appDefinition)[0]?.id ?? null);
+manager.setCredential('openai', { apiKey: 'sk-example' });
+
+const result = await validateCredential('openai', 'sk-example', appDefinition);
+await manager.save();
+
+console.log(result.status, manager.getState());
+```
+
+## React usage example
+
+```tsx
+'use client';
+
+import {
+  AIConfigPanel,
+  AIConfigProvider,
+} from '@evergraytech/ai-config/react';
+import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
+
+const appDefinition: AIConfigAppDefinition = {
+  appId: 'design-system-demo',
+  defaultMode: {
+    enabled: true,
+    label: 'App-provided AI',
+    provider: 'hosted',
+    model: 'evergray-default',
+  },
+  byok: {
+    enabled: true,
+    providers: ['openai', 'anthropic'],
+  },
+};
+
+export function AISettingsCard() {
+  return (
+    <AIConfigProvider appDefinition={appDefinition}>
+      <AIConfigPanel />
+    </AIConfigProvider>
+  );
+}
+```
+
+## Host app customization example
+
+- filter providers with `byok.providers`
+- reorder them with `providerOrder`
+- restrict models with `modelFilter`
+- override labels/help text/validation with `providerOverrides`
+- replace browser storage with a custom `AIConfigStorageAdapter`
+
+## Persistence, recovery, and versioning
+
+- stored state uses a schema-versioned payload
+- default persistence uses `localStorage` through an adapter
+- SSR/non-browser usage fails safely
+- corrupted or incompatible payloads reset to a valid normalized state
+- normalization preserves unaffected settings when providers/models disappear
+
+## Validation and security notes
+
+- validation is pluggable and can be supplied by providers or host apps
+- raw secrets should never be logged or surfaced in validation output
+- stored keys are local to the user’s browser/device and are **not** equivalent to server-side secret storage
+- use `redactCredential()` and `sanitizeAIConfigForDebug()` for safe debug surfaces
+
+## Styling and theming guidance
+
+- built-in React components are intentionally lightly styled
+- wrap components in your design-system primitives where needed
+- prefer using the headless layer if a host app needs fully custom layout or behavior
+- current components are designed to remain usable in dark-theme and restrained UI contexts
+
 ## Local-first credential caveat
 
 This package intentionally supports storing provider API keys locally in the user’s browser/device context.

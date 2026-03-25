@@ -156,4 +156,5 @@ export interface AIConfigManager {
   load(): Promise<AIConfigState>;
   save(): Promise<void>;
   clearPersisted(): Promise<void>;
+  getAppDefinition(): AIConfigAppDefinition;
 }

@@ -5,6 +5,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { createAIConfigManager, type AIConfigAppDefinition } from '../../src';
 import {
+  AICredentialStatus,
+  AIGenerationSettingsForm,
+  AIUsageHint,
   AIConfigPanel,
   AIConfigProvider,
   useAIConfig,
@@ -178,5 +181,24 @@ describe('AIConfigPanel', () => {
 
     expect(screen.getByTestId('hook-model-count')).toHaveTextContent('2');
     expect(screen.getByTestId('hook-manager-mode')).toHaveTextContent('byok');
+  });
+
+  it('covers additional accessibility and conditional render states', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+        <AICredentialStatus />
+        <AIUsageHint />
+        <AIGenerationSettingsForm />
+      </AIConfigProvider>,
+    );
+
+    expect(screen.getByText('No provider selected.')).toBeInTheDocument();
+    expect(screen.getByText('App-provided AI')).toBeInTheDocument();
+
+    const reasoningSelect = screen.getByLabelText('Reasoning preset');
+    await user.selectOptions(reasoningSelect, 'high');
+    expect((reasoningSelect as HTMLSelectElement).value).toBe('high');
   });
 });

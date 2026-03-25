@@ -82,6 +82,9 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       await clearAIConfig(storage);
       assign(resetAIConfigState(options.appDefinition));
     },
+    getAppDefinition() {
+      return options.appDefinition;
+    },
   };
 
   manager.options = options;

@@ -452,3 +452,13 @@ The v0 package is acceptable when a host app can:
 - filter or curate model availability
 - recover safely from missing or corrupt local state
 - do all of the above without requiring a backend dependency
+
+## Release Readiness Notes
+
+For internal publication readiness, the package should maintain:
+
+- separate `index` and `react` entry points
+- passing `test`, `typecheck`, and `build` workflows
+- stable exported contracts for headless and React consumers
+- documentation that matches the actual public API and local-first caveats
+- plan tracking in `.plans/` that records completed implementation phases

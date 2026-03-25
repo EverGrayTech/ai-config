@@ -65,9 +65,7 @@ export function AIConfigProvider({
 export function useAIConfigAppDefinition(): AIConfigAppDefinition {
   const { manager } = useAIConfig();
 
-  return (manager as unknown as { options?: { appDefinition?: AIConfigAppDefinition } }).options?.appDefinition ?? {
-    appId: '',
-  };
+  return manager.getAppDefinition();
 }
 
 export function useAIConfig(): AIConfigContextValue {
