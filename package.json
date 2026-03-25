@@ -14,10 +14,15 @@
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.js"
-    }
+    },
+    "./styles/base.css": "./styles/base.css"
   },
+  "sideEffects": [
+    "./styles/base.css"
+  ],
   "files": [
     "dist",
+    "styles",
     "README.md"
   ],
   "publishConfig": {

@@ -9,7 +9,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
       reportsDirectory: './coverage',
-      exclude: ['src/react.ts', 'vitest.config.ts', 'test/setup.ts'],
+      exclude: ['dist/**', 'src/react.ts', 'vitest.config.ts', 'test/setup.ts'],
       thresholds: {
         lines: 89,
         functions: 89,

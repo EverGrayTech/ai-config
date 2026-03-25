@@ -13,7 +13,11 @@ import { AIUsageHint } from './AIUsageHint';
 
 export function AIConfigPanel() {
   return (
-    <section aria-label="AI configuration panel">
+    <section
+      aria-label="AI configuration panel"
+      className="eg-ai-config-panel"
+      data-eg-ai-config-panel="true"
+    >
       <AIModeSelector />
       <AIProviderSelector />
       <AIModelSelector />

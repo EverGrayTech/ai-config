@@ -14,22 +14,29 @@ export function AIApiKeyField() {
   }
 
   return (
-    <div>
-      <label htmlFor="ai-api-key">API key</label>
+    <div className="eg-ai-config-section eg-ai-config-api-key" data-eg-ai-config-section="api-key">
+      <label className="eg-ai-config-field" htmlFor="ai-api-key">
+        API key
+      </label>
       <input
+        className="eg-ai-config-control"
         id="ai-api-key"
         type="password"
         value={value}
         onChange={(event) => setValue(event.target.value)}
         aria-describedby="ai-api-key-help"
       />
-      <div id="ai-api-key-help">Stored locally in your browser for this device.</div>
-      <button type="button" onClick={() => actions.setCredential(state.selectedProvider!, { apiKey: value })}>
+      <div className="eg-ai-config-help-text" id="ai-api-key-help">
+        Stored locally in your browser for this device.
+      </div>
+      <div className="eg-ai-config-actions" data-eg-ai-config-actions="api-key">
+      <button className="eg-ai-config-button" type="button" onClick={() => actions.setCredential(state.selectedProvider!, { apiKey: value })}>
         Save key
       </button>
-      <button type="button" onClick={() => actions.clearCredential(state.selectedProvider!)}>
+      <button className="eg-ai-config-button eg-ai-config-button-secondary" type="button" onClick={() => actions.clearCredential(state.selectedProvider!)}>
         Clear key
       </button>
+      </div>
     </div>
   );
 }

@@ -83,6 +83,7 @@ describe('AIConfigPanel', () => {
     expect(screen.getByLabelText('AI provider')).toBeInTheDocument();
     expect(screen.getByLabelText('AI model')).toBeInTheDocument();
     expect(screen.getByText('Generation settings')).toBeInTheDocument();
+    expect(screen.getByLabelText('AI configuration panel')).toHaveClass('eg-ai-config-panel');
   });
 
   it('updates mode, provider, model, and generation settings through interactions', async () => {
@@ -194,11 +195,29 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    expect(screen.getByText('No provider selected.')).toBeInTheDocument();
+    expect(screen.getByText('No saved API key for this provider.')).toBeInTheDocument();
     expect(screen.getByText('App-provided AI')).toBeInTheDocument();
 
     const reasoningSelect = screen.getByLabelText('Reasoning preset');
     await user.selectOptions(reasoningSelect, 'high');
     expect((reasoningSelect as HTMLSelectElement).value).toBe('high');
+    expect(screen.getByText('No saved API key for this provider.')).toHaveAttribute('data-eg-ai-config-status', 'missing');
+  });
+
+  it('exposes stable styling hooks for key sections and actions', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+        <AIConfigPanel />
+      </AIConfigProvider>,
+    );
+
+    expect(screen.getByLabelText('AI provider').closest('[data-eg-ai-config-field="provider"]')).not.toBeNull();
+    expect(screen.getByLabelText('AI model').closest('[data-eg-ai-config-field="model"]')).not.toBeNull();
+    expect(screen.getByText('Reset AI settings')).toHaveAttribute('data-eg-ai-config-action', 'reset');
+
+    await user.click(screen.getByLabelText('Bring your own key'));
+    expect(screen.getByText('Save key').closest('[data-eg-ai-config-actions="api-key"]')).not.toBeNull();
   });
 });

@@ -142,10 +142,22 @@ export function AISettingsCard() {
 
 ## Styling and theming guidance
 
+- import the neutral base stylesheet with `import '@evergraytech/ai-config/styles/base.css';`
 - built-in React components are intentionally lightly styled
 - wrap components in your design-system primitives where needed
 - prefer using the headless layer if a host app needs fully custom layout or behavior
 - current components are designed to remain usable in dark-theme and restrained UI contexts
+- stable class names and `data-*` hooks are provided for targeted overrides
+
+### Styling contract
+
+- root panel: `.eg-ai-config-panel` / `[data-eg-ai-config-panel="true"]`
+- sections: `.eg-ai-config-section` with `data-eg-ai-config-section`
+- fields: `.eg-ai-config-field` with `data-eg-ai-config-field`
+- controls: `.eg-ai-config-control`
+- actions row: `.eg-ai-config-actions` with `data-eg-ai-config-actions`
+- buttons: `.eg-ai-config-button`
+- status messaging: `.eg-ai-config-status` with `data-eg-ai-config-status`
 
 ## Local-first credential caveat
 

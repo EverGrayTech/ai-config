@@ -11,9 +11,10 @@ export function AIModelSelector() {
   const models = useAvailableModels();
 
   return (
-    <label>
+    <label className="eg-ai-config-field eg-ai-config-model-selector" data-eg-ai-config-field="model">
       Model
       <select
+        className="eg-ai-config-control"
         aria-label="AI model"
         value={state.selectedModel ?? ''}
         onChange={(event) => actions.setModel(event.target.value || null)}

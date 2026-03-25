@@ -9,11 +9,12 @@ export function AIGenerationSettingsForm() {
   const actions = useAIConfigActions();
 
   return (
-    <fieldset>
+    <fieldset className="eg-ai-config-section eg-ai-config-generation-settings" data-eg-ai-config-section="generation">
       <legend>Generation settings</legend>
-      <label>
+      <label className="eg-ai-config-field">
         Temperature
         <input
+          className="eg-ai-config-control"
           type="number"
           min="0"
           max="2"
@@ -22,9 +23,10 @@ export function AIGenerationSettingsForm() {
           onChange={(event) => actions.updateGeneration({ temperature: Number(event.target.value) })}
         />
       </label>
-      <label>
+      <label className="eg-ai-config-field">
         Max output tokens
         <input
+          className="eg-ai-config-control"
           type="number"
           min="1"
           step="1"
@@ -32,9 +34,10 @@ export function AIGenerationSettingsForm() {
           onChange={(event) => actions.updateGeneration({ maxOutputTokens: Number(event.target.value) })}
         />
       </label>
-      <label>
+      <label className="eg-ai-config-field">
         Reasoning preset
         <select
+          className="eg-ai-config-control"
           aria-label="Reasoning preset"
           value={state.generation.reasoningPreset ?? ''}
           onChange={(event) =>

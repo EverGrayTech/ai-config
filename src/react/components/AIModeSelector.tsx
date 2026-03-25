@@ -9,9 +9,9 @@ export function AIModeSelector() {
   const actions = useAIConfigActions();
 
   return (
-    <fieldset>
+    <fieldset className="eg-ai-config-section eg-ai-config-mode-selector" data-eg-ai-config-section="mode">
       <legend>AI mode</legend>
-      <label>
+      <label className="eg-ai-config-choice">
         <input
           type="radio"
           name="ai-mode"
@@ -20,7 +20,7 @@ export function AIModeSelector() {
         />
         Default app-provided mode
       </label>
-      <label>
+      <label className="eg-ai-config-choice">
         <input
           type="radio"
           name="ai-mode"
