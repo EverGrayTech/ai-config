@@ -132,7 +132,28 @@ Current scope notes:
 - hosted/default invocation uses the gateway adapter boundary and maps to the gateway `input` contract
 - BYOK invocation uses a direct-provider client registry supplied to the manager
 - token refresh/retry handling is not fully implemented yet
-- the current result shape is intentionally minimal and will be expanded by the follow-on metadata and structured-error plans
+- successful invocation results now include canonical provider/model/output fields plus execution-path metadata, optional human-readable labels, and optional normalized usage when provided by the hosted gateway or provider adapter
+
+## Invocation result metadata
+
+Successful invocations return a shared success envelope intended to be stored directly as provenance metadata alongside generated outputs.
+
+Canonical success fields include:
+
+- `provider`
+- `model`
+- `output`
+- `executionPath`
+
+Additional best-effort metadata may include:
+
+- `providerLabel`
+- `modelLabel`
+- `usage.inputTokens`
+- `usage.outputTokens`
+- `usage.totalTokens`
+
+Host apps should prefer persisting the invocation result metadata itself rather than separately inspecting config state after generation completes.
 
 ## React usage
 

@@ -60,6 +60,13 @@ export interface AIInvokeSuccess {
   model: string;
   output: string;
   executionPath: 'hosted' | 'byok-direct';
+  providerLabel?: string;
+  modelLabel?: string;
+  usage?: {
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+  };
 }
 
 export interface AIInvokeError {
@@ -100,6 +107,11 @@ export interface AIHostedInvokeSuccess {
   provider: string;
   model: string;
   output: string;
+  usage?: {
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+  };
 }
 
 export interface AIHostedGatewayClient {

@@ -445,6 +445,11 @@ describe('headless foundation', () => {
         provider: 'openai',
         model: 'gpt-4o-mini',
         output: 'Hosted output',
+        usage: {
+          inputTokens: 3,
+          outputTokens: 12,
+          totalTokens: 15,
+        },
       }),
     };
 
@@ -476,6 +481,13 @@ describe('headless foundation', () => {
       model: 'gpt-4o-mini',
       output: 'Hosted output',
       executionPath: 'hosted',
+      providerLabel: 'OpenAI',
+      modelLabel: undefined,
+      usage: {
+        inputTokens: 3,
+        outputTokens: 12,
+        totalTokens: 15,
+      },
     });
   });
 
@@ -518,6 +530,9 @@ describe('headless foundation', () => {
       model: 'gpt-4.1-mini',
       output: 'BYOK output',
       executionPath: 'byok-direct',
+      providerLabel: 'OpenAI',
+      modelLabel: 'GPT-4.1 Mini',
+      usage: undefined,
     });
   });
 
@@ -585,11 +600,19 @@ describe('headless foundation', () => {
         .fn()
         .mockResolvedValueOnce({ token: 'expired-token' })
         .mockResolvedValueOnce({ token: 'fresh-token' }),
-      invoke: vi.fn().mockRejectedValueOnce(tokenExpiredError).mockResolvedValueOnce({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        output: 'Hosted output after refresh',
-      }),
+      invoke: vi
+        .fn()
+        .mockRejectedValueOnce(tokenExpiredError)
+        .mockResolvedValueOnce({
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          output: 'Hosted output after refresh',
+          usage: {
+            inputTokens: 4,
+            outputTokens: 16,
+            totalTokens: 20,
+          },
+        }),
     };
 
     const manager = createAIConfigManager({
@@ -625,6 +648,13 @@ describe('headless foundation', () => {
       model: 'gpt-4o-mini',
       output: 'Hosted output after refresh',
       executionPath: 'hosted',
+      providerLabel: 'OpenAI',
+      modelLabel: undefined,
+      usage: {
+        inputTokens: 4,
+        outputTokens: 16,
+        totalTokens: 20,
+      },
     });
   });
 });

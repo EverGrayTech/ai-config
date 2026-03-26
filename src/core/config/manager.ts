@@ -1,3 +1,4 @@
+import { getModelById, getProviderById } from '../providers/registry';
 import { createLocalStorageAIConfigStorageAdapter } from '../storage/localStorage';
 import { clearAIConfig, loadAIConfig, saveAIConfig } from '../storage/persistence';
 import type {
@@ -162,6 +163,14 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
           model: response.model,
           output: response.output,
           executionPath: 'hosted',
+          providerLabel: getProviderById(response.provider as AIProviderId, options.appDefinition)
+            ?.label,
+          modelLabel: getModelById(
+            response.provider as AIProviderId,
+            response.model,
+            options.appDefinition,
+          )?.label,
+          usage: response.usage,
         };
       }
 
@@ -213,6 +222,10 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         model: response.model,
         output: response.output,
         executionPath: 'byok-direct',
+        providerLabel: getProviderById(state.selectedProvider, options.appDefinition)?.label,
+        modelLabel: getModelById(state.selectedProvider, response.model, options.appDefinition)
+          ?.label,
+        usage: response.usage,
       };
     },
     getAppDefinition() {

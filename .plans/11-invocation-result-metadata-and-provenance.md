@@ -69,29 +69,29 @@ Only metadata that is stable across the shared stack should be promoted into the
 
 ### Phase 1: Define the canonical success envelope
 
-- [ ] Introduce the shared invocation success type.
-- [ ] Separate required provenance fields from optional extended metadata.
-- [ ] Keep the contract small enough for broad host adoption.
+- [x] Introduce the shared invocation success type.
+- [x] Separate required provenance fields from optional extended metadata.
+- [x] Keep the contract small enough for broad host adoption.
 
 ### Phase 2: Normalize hosted and direct execution outputs
 
-- [ ] Map hosted gateway responses into the canonical success envelope.
-- [ ] Map direct-provider responses into the same envelope.
-- [ ] Ensure provider/model metadata reflects the actual execution path rather than stale host assumptions.
-- [ ] Decide whether gateway-provided usage should be canonical, optional, or pass-through metadata.
+- [x] Map hosted gateway responses into the canonical success envelope.
+- [x] Map direct-provider responses into the same envelope.
+- [x] Ensure provider/model metadata reflects the actual execution path rather than stale host assumptions.
+- [x] Decide whether gateway-provided usage should be canonical, optional, or pass-through metadata.
 
 ### Phase 3: Document provenance usage
 
-- [ ] Document that host apps should persist invocation metadata from the result contract itself.
-- [ ] Add examples showing how downstream apps store response content plus provenance together.
-- [ ] Clarify which metadata fields are canonical versus best-effort.
+- [x] Document that host apps should persist invocation metadata from the result contract itself.
+- [x] Add examples showing how downstream apps store response content plus provenance together.
+- [x] Clarify which metadata fields are canonical versus best-effort.
 
 ## Acceptance criteria
 
 This plan is complete when:
 
-- [ ] successful invocations return a canonical shared success envelope
-- [ ] the envelope always includes provider id, model id, and response content
-- [ ] host apps can persist that result as trustworthy provenance without separately querying config state
-- [ ] hosted and direct execution paths normalize into the same success contract
-- [ ] any included usage or response-id metadata is clearly documented as canonical or optional
+- [x] successful invocations return a canonical shared success envelope
+- [x] the envelope always includes provider id, model id, and response content
+- [x] host apps can persist that result as trustworthy provenance without separately querying config state
+- [x] hosted and direct execution paths normalize into the same success contract
+- [x] any included usage or response-id metadata is clearly documented as canonical or optional
