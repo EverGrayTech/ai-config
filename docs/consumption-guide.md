@@ -127,6 +127,65 @@ if (!invokeResult.ok) {
 }
 ```
 
+## Operation-category routing
+
+Apps with multiple AI workflows can declare `operationCategories` while still keeping one shared AI settings widget and one shared credential store per provider.
+
+- the **Default** route remains the baseline provider/model/generation path
+- each declared category can either inherit Default or enable its own override
+- provider credentials remain shared globally by provider and are not duplicated per category
+
+Example categorized app definition:
+
+```ts
+import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
+
+const appDefinition: AIConfigAppDefinition = {
+  appId: 'plot-your-path',
+  defaultMode: {
+    enabled: true,
+    label: 'EverGray hosted AI',
+    provider: 'hosted',
+    model: 'gpt-4o-mini',
+  },
+  byok: {
+    enabled: true,
+    providers: ['openai', 'anthropic'],
+  },
+  operationCategories: [
+    { key: 'evaluate', label: 'Evaluate' },
+    { key: 'write', label: 'Write' },
+  ],
+};
+```
+
+In the packaged React UI:
+
+- apps without categories show only Default route controls
+- apps with categories show Default controls plus one collapsible section per category
+- category overrides start disabled and inherit Default until explicitly enabled
+- advanced generation controls are collapsed by default to reduce clutter
+
+When a collapsed generation section contains non-default values, the panel surfaces a short summary so users can see that a route differs without opening every section.
+
+## Category-aware invocation
+
+Hosts can invoke a category-specific route through `manager.invoke({ category })`.
+
+```ts
+const result = await manager.invoke({
+  input: 'Score this answer for factual accuracy.',
+  category: 'evaluate',
+});
+```
+
+Behavior guarantees:
+
+- if `category` is omitted, invocation uses the Default route
+- if a declared category override is disabled, invocation inherits Default
+- if an undeclared category is provided, invocation fails with a structured `invalid-category` configuration error
+- if an override is enabled but incomplete or invalid, invocation fails with a structured configuration error instead of silently falling back to Default
+
 Current scope notes:
 
 - hosted/default invocation uses the gateway adapter boundary and maps to the gateway `input` contract
@@ -225,6 +284,42 @@ export function AISettingsStatus() {
 }
 ```
 
+Categorized apps can keep the same top-level panel while exposing route-specific overrides:
+
+```tsx
+'use client';
+
+import '@evergraytech/ai-config/styles/base.css';
+import { AIConfigPanel, AIConfigProvider } from '@evergraytech/ai-config/react';
+import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
+
+const categorizedDefinition: AIConfigAppDefinition = {
+  appId: 'design-system-demo',
+  defaultMode: {
+    enabled: true,
+    label: 'App-provided AI',
+    provider: 'hosted',
+    model: 'evergray-default',
+  },
+  byok: {
+    enabled: true,
+    providers: ['openai', 'anthropic'],
+  },
+  operationCategories: [
+    { key: 'evaluate', label: 'Evaluation' },
+    { key: 'write', label: 'Writing' },
+  ],
+};
+
+export function CategorizedAISettingsCard() {
+  return (
+    <AIConfigProvider appDefinition={categorizedDefinition}>
+      <AIConfigPanel />
+    </AIConfigProvider>
+  );
+}
+```
+
 ## Embedding inside an existing Settings page
 
 `AIConfigPanel` is intended to work as a section-level building block, not as a full-page shell.
@@ -289,6 +384,7 @@ Host apps can control:
 
 - default mode availability and messaging
 - BYOK enablement and provider list
+- operation-category declarations and labels
 - model filtering and curation
 - provider ordering and overrides
 - validation behavior

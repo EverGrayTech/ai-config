@@ -50,40 +50,40 @@ This plan depends on that headless foundation and focuses on presenting and vali
 
 ### Phase 1: Restructure the settings UI around route concepts
 
-- [ ] Keep one `AIConfigPanel` as the single cohesive AI settings widget.
-- [ ] Introduce a clear separation between shared provider setup and route/model routing.
-- [ ] Render only Default route controls when the app does not declare categories.
-- [ ] Render Default plus one collapsible section per declared category when categories exist.
-- [ ] Keep category override sections disabled and collapsed by default.
+- [x] Keep one `AIConfigPanel` as the single cohesive AI settings widget.
+- [x] Introduce a clear separation between shared provider setup and route/model routing.
+- [x] Render only Default route controls when the app does not declare categories.
+- [x] Render Default plus one collapsible section per declared category when categories exist.
+- [x] Keep category override sections disabled and collapsed by default.
 
 ### Phase 2: Reduce clutter while preserving control
 
-- [ ] Make advanced generation settings collapsed by default for Default and category routes.
-- [ ] Surface concise summaries when collapsed sections contain non-default generation values.
-- [ ] Ensure the UI clearly communicates when a category inherits Default versus uses its own override.
-- [ ] Avoid duplicating provider credential entry inside route sections.
+- [x] Make advanced generation settings collapsed by default for Default and category routes.
+- [x] Surface concise summaries when collapsed sections contain non-default generation values.
+- [x] Ensure the UI clearly communicates when a category inherits Default versus uses its own override.
+- [x] Avoid duplicating provider credential entry inside route sections.
 
 ### Phase 3: Documentation updates
 
-- [ ] Update downstream docs to explain operation categories and shared credentials.
-- [ ] Document `manager.invoke({ category })` behavior and undeclared-category rejection.
-- [ ] Document enabled-but-invalid override failure behavior.
-- [ ] Update usage examples to show both category-free and categorized apps.
+- [x] Update downstream docs to explain operation categories and shared credentials.
+- [x] Document `manager.invoke({ category })` behavior and undeclared-category rejection.
+- [x] Document enabled-but-invalid override failure behavior.
+- [x] Update usage examples to show both category-free and categorized apps.
 
 ### Phase 4: Validation and automated coverage
 
-- [ ] Add React tests for default-only and categorized settings-panel rendering.
-- [ ] Add tests for category enable/disable inheritance behavior.
-- [ ] Add tests for collapsed advanced-generation controls and summaries.
-- [ ] Add headless or integration-level tests that confirm the documented route semantics are reflected in user-visible behavior.
+- [x] Add React tests for default-only and categorized settings-panel rendering.
+- [x] Add tests for category enable/disable inheritance behavior.
+- [x] Add tests for collapsed advanced-generation controls and summaries.
+- [x] Add headless or integration-level tests that confirm the documented route semantics are reflected in user-visible behavior.
 
 ## Acceptance criteria
 
 This plan is complete when:
 
-- [ ] the settings UI remains a single widget while supporting category overrides
-- [ ] provider credentials are configured in one shared place rather than duplicated per category
-- [ ] Default-only apps remain simple and uncluttered
-- [ ] categorized apps expose advanced flexibility without overwhelming first-time users
-- [ ] advanced generation controls are available but not prominent by default
-- [ ] documentation and tests clearly reflect the final category-routing behavior
+- [x] the settings UI remains a single widget while supporting category overrides
+- [x] provider credentials are configured in one shared place rather than duplicated per category
+- [x] Default-only apps remain simple and uncluttered
+- [x] categorized apps expose advanced flexibility without overwhelming first-time users
+- [x] advanced generation controls are available but not prominent by default
+- [x] documentation and tests clearly reflect the final category-routing behavior

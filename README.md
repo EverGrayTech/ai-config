@@ -30,6 +30,7 @@ It is not intended to be the full AI execution runtime. It manages configuration
 - bring-your-own-key workflows for supported providers
 - provider and model selection
 - generation settings such as temperature and output limits
+- optional operation-category routing with shared provider credentials
 - local credential storage and management
 - rough usage and cost-awareness messaging
 - unified invocation routing across hosted and BYOK paths
@@ -67,6 +68,18 @@ The headless layer now includes a thin package-owned invocation surface.
 - failed invocations return a structured error contract with normalized category/code/message/retryability fields
 
 This is still intentionally narrower than a full runtime or orchestration framework.
+
+## Operation-category routing posture
+
+Apps can optionally declare named AI operation categories such as evaluation or writing.
+
+- the package keeps one shared credential store per provider
+- the Default route remains the baseline provider/model/generation path
+- each category can inherit Default or opt into its own override route
+- `AIConfigPanel` stays a single settings widget even when categories are enabled
+- `manager.invoke({ category })` resolves the effective route and rejects undeclared categories with structured configuration errors
+
+This keeps default integrations simple while allowing advanced apps to route different tasks through different model selections.
 
 For full integration guidance, examples, styling guidance, and host-app customization, use [Consumption Guide](docs/consumption-guide.md).
 
