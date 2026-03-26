@@ -89,35 +89,35 @@ The structured error contract should:
 
 ### Phase 1: Define the canonical error shape
 
-- [ ] Introduce shared invocation error types and categories.
-- [ ] Separate UI-safe fields from lower-level debug metadata.
-- [ ] Ensure the contract is usable from both headless and React-hosted apps.
+- [x] Introduce shared invocation error types and categories.
+- [x] Separate UI-safe fields from lower-level debug metadata.
+- [x] Ensure the contract is usable from both headless and React-hosted apps.
 
 ### Phase 2: Normalize hosted gateway errors
 
-- [ ] Map gateway auth and `/ai` failures into the canonical error contract.
-- [ ] Distinguish policy rejections, auth failures, request validation failures, and transport failures.
-- [ ] Preserve the hard-rejection posture documented by `@evergraytech/ai-gateway`.
-- [ ] Incorporate gateway retry guidance so expired-token flows refresh through `/auth`, while validation/policy/unsupported-model failures remain non-retryable.
+- [x] Map gateway auth and `/ai` failures into the canonical error contract.
+- [x] Distinguish policy rejections, auth failures, request validation failures, and transport failures.
+- [x] Preserve the hard-rejection posture documented by `@evergraytech/ai-gateway`.
+- [x] Incorporate gateway retry guidance so expired-token flows refresh through `/auth`, while validation/policy/unsupported-model failures remain non-retryable.
 
 ### Phase 3: Normalize direct-provider errors
 
-- [ ] Map direct-provider execution failures into the same error contract.
-- [ ] Preserve a consistent no-fallback posture when direct execution fails.
-- [ ] Document which errors are likely retryable versus user-action-required.
+- [x] Map direct-provider execution failures into the same error contract.
+- [x] Preserve a consistent no-fallback posture when direct execution fails.
+- [x] Document which errors are likely retryable versus user-action-required.
 
 ### Phase 4: Document host failure handling
 
-- [ ] Add guidance showing how host apps surface structured errors directly.
-- [ ] Document that host apps should not rebuild provider-specific normalization layers on top.
-- [ ] Clarify how structured invocation errors interact with existing validation state and config UI.
-- [ ] Document how structured errors should represent interrupted or buffered streaming failures if streaming is enabled in a later phase.
+- [x] Add guidance showing how host apps surface structured errors directly.
+- [x] Document that host apps should not rebuild provider-specific normalization layers on top.
+- [x] Clarify how structured invocation errors interact with existing validation state and config UI.
+- [x] Document how structured errors should represent interrupted or buffered streaming failures if streaming is enabled in a later phase.
 
 ## Acceptance criteria
 
 This plan is complete when:
 
-- [ ] failed invocations return a canonical structured error shape
-- [ ] hosted and direct execution failures normalize into that shared shape
-- [ ] the contract is safe for host UI presentation and logging
-- [ ] the package never silently falls back to fake/local generation when invocation fails
+- [x] failed invocations return a canonical structured error shape
+- [x] hosted and direct execution failures normalize into that shared shape
+- [x] the contract is safe for host UI presentation and logging
+- [x] the package never silently falls back to fake/local generation when invocation fails

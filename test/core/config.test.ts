@@ -546,8 +546,10 @@ describe('headless foundation', () => {
 
     expect(result).toEqual({
       ok: false,
+      category: 'configuration',
       code: 'hosted-not-configured',
       message: 'Hosted gateway execution is not configured.',
+      retryable: false,
     });
   });
 
@@ -566,8 +568,10 @@ describe('headless foundation', () => {
 
     expect(result).toEqual({
       ok: false,
+      category: 'configuration',
       code: 'byok-not-configured',
       message: 'Direct provider execution is not configured for "openai".',
+      retryable: false,
     });
   });
 
@@ -588,8 +592,116 @@ describe('headless foundation', () => {
 
     expect(result).toEqual({
       ok: false,
+      category: 'configuration',
       code: 'missing-credential',
       message: 'Missing credential for provider "openai".',
+      retryable: false,
+    });
+  });
+
+  it('returns a structured hosted auth error when authentication fails', async () => {
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway: {
+          authenticate: vi.fn().mockRejectedValue(new Error('auth unavailable')),
+          invoke: vi.fn(),
+        },
+      },
+    });
+
+    const result = await manager.invoke({ input: 'Hello hosted world' });
+
+    expect(result).toEqual({
+      ok: false,
+      category: 'authentication',
+      code: 'hosted-auth-failed',
+      message: 'auth unavailable',
+      retryable: true,
+    });
+  });
+
+  it('returns a structured hosted invoke error when gateway execution fails', async () => {
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway: {
+          authenticate: vi.fn().mockResolvedValue({ token: 'hosted-token' }),
+          invoke: vi.fn().mockRejectedValue(new Error('gateway unavailable')),
+        },
+      },
+    });
+
+    const result = await manager.invoke({ input: 'Hello hosted world' });
+
+    expect(result).toEqual({
+      ok: false,
+      category: 'network',
+      code: 'hosted-invoke-failed',
+      message: 'gateway unavailable',
+      retryable: true,
+    });
+  });
+
+  it('returns a structured direct invoke error when provider execution fails', async () => {
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+      directProviders: {
+        getClient() {
+          return {
+            invoke: vi.fn().mockRejectedValue(new Error('provider unavailable')),
+          };
+        },
+      },
+    });
+
+    manager.setMode('byok');
+    manager.setProvider('openai');
+    manager.setModel('gpt-4.1-mini');
+    manager.setCredential('openai', { apiKey: 'sk-test-1234567890' });
+
+    const result = await manager.invoke({ input: 'Hello byok world' });
+
+    expect(result).toEqual({
+      ok: false,
+      category: 'provider',
+      code: 'direct-invoke-failed',
+      message: 'provider unavailable',
+      retryable: true,
+    });
+  });
+
+  it('returns a structured token-expired error when refresh fails', async () => {
+    const tokenExpiredError = new Error('token expired');
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway: {
+          authenticate: vi
+            .fn()
+            .mockResolvedValueOnce({ token: 'expired-token' })
+            .mockRejectedValueOnce(new Error('refresh denied')),
+          invoke: vi.fn().mockRejectedValue(tokenExpiredError),
+        },
+        shouldRefreshToken: (error) => error === tokenExpiredError,
+      },
+    });
+
+    const result = await manager.invoke({ input: 'Hello hosted world' });
+
+    expect(result).toEqual({
+      ok: false,
+      category: 'authentication',
+      code: 'token-expired',
+      message: 'refresh denied',
+      retryable: true,
     });
   });
 

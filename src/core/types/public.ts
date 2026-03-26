@@ -71,6 +71,14 @@ export interface AIInvokeSuccess {
 
 export interface AIInvokeError {
   ok: false;
+  category:
+    | 'configuration'
+    | 'authentication'
+    | 'policy'
+    | 'rate-limit'
+    | 'network'
+    | 'provider'
+    | 'unknown';
   code:
     | 'missing-provider'
     | 'missing-model'
@@ -78,8 +86,14 @@ export interface AIInvokeError {
     | 'unsupported-provider'
     | 'unsupported-mode'
     | 'hosted-not-configured'
-    | 'byok-not-configured';
+    | 'byok-not-configured'
+    | 'hosted-auth-failed'
+    | 'hosted-invoke-failed'
+    | 'token-expired'
+    | 'direct-invoke-failed';
   message: string;
+  retryable?: boolean;
+  details?: Record<string, string | number | boolean | null | undefined>;
 }
 
 export type AIInvokeResult = AIInvokeSuccess | AIInvokeError;

@@ -9,6 +9,7 @@ import type {
   AIConfigStorageAdapter,
   AICredentialRecord,
   AIGenerationSettings,
+  AIHostedAuthResult,
   AIHostedInvokeSuccess,
   AIProviderId,
 } from '../types/public';
@@ -25,6 +26,10 @@ import { mergeAIConfigWithAppDefinition } from './merge';
 
 function getMissingCredentialMessage(provider: AIProviderId): string {
   return `Missing credential for provider \"${provider}\".`;
+}
+
+function toErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 export function createAIConfigManager(options: AIConfigManagerOptions): AIConfigManager {
@@ -110,8 +115,10 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       if (!state.selectedProvider) {
         return {
           ok: false,
+          category: 'configuration',
           code: 'missing-provider',
           message: 'No AI provider is currently selected.',
+          retryable: false,
         };
       }
 
@@ -119,15 +126,29 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         if (!options.hostedGateway) {
           return {
             ok: false,
+            category: 'configuration',
             code: 'hosted-not-configured',
             message: 'Hosted gateway execution is not configured.',
+            retryable: false,
           };
         }
 
-        const auth = await options.hostedGateway.gateway.authenticate({
-          appId: options.appDefinition.appId,
-          clientId: options.hostedGateway.clientId,
-        });
+        let auth: AIHostedAuthResult;
+
+        try {
+          auth = await options.hostedGateway.gateway.authenticate({
+            appId: options.appDefinition.appId,
+            clientId: options.hostedGateway.clientId,
+          });
+        } catch (error) {
+          return {
+            ok: false,
+            category: 'authentication',
+            code: 'hosted-auth-failed',
+            message: toErrorMessage(error, 'Hosted authentication failed.'),
+            retryable: true,
+          };
+        }
 
         const invokeRequest = {
           token: auth.token,
@@ -143,18 +164,46 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
           response = await options.hostedGateway.gateway.invoke(invokeRequest);
         } catch (error) {
           if (!options.hostedGateway.shouldRefreshToken?.(error)) {
-            throw error;
+            return {
+              ok: false,
+              category: 'network',
+              code: 'hosted-invoke-failed',
+              message: toErrorMessage(error, 'Hosted invocation failed.'),
+              retryable: true,
+            };
           }
 
-          const refreshedAuth = await options.hostedGateway.gateway.authenticate({
-            appId: options.appDefinition.appId,
-            clientId: options.hostedGateway.clientId,
-          });
+          let refreshedAuth: AIHostedAuthResult;
 
-          response = await options.hostedGateway.gateway.invoke({
-            ...invokeRequest,
-            token: refreshedAuth.token,
-          });
+          try {
+            refreshedAuth = await options.hostedGateway.gateway.authenticate({
+              appId: options.appDefinition.appId,
+              clientId: options.hostedGateway.clientId,
+            });
+          } catch (refreshError) {
+            return {
+              ok: false,
+              category: 'authentication',
+              code: 'token-expired',
+              message: toErrorMessage(refreshError, 'Hosted token refresh failed.'),
+              retryable: true,
+            };
+          }
+
+          try {
+            response = await options.hostedGateway.gateway.invoke({
+              ...invokeRequest,
+              token: refreshedAuth.token,
+            });
+          } catch (retryError) {
+            return {
+              ok: false,
+              category: 'network',
+              code: 'hosted-invoke-failed',
+              message: toErrorMessage(retryError, 'Hosted invocation failed after token refresh.'),
+              retryable: true,
+            };
+          }
         }
 
         return {
@@ -177,16 +226,20 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       if (state.mode !== 'byok') {
         return {
           ok: false,
+          category: 'configuration',
           code: 'unsupported-mode',
           message: `Unsupported AI mode \"${state.mode}\".`,
+          retryable: false,
         };
       }
 
       if (!state.selectedModel) {
         return {
           ok: false,
+          category: 'configuration',
           code: 'missing-model',
           message: 'No AI model is currently selected.',
+          retryable: false,
         };
       }
 
@@ -194,8 +247,10 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       if (!credential?.apiKey) {
         return {
           ok: false,
+          category: 'configuration',
           code: 'missing-credential',
           message: getMissingCredentialMessage(state.selectedProvider),
+          retryable: false,
         };
       }
 
@@ -203,18 +258,32 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       if (!client) {
         return {
           ok: false,
+          category: 'configuration',
           code: 'byok-not-configured',
           message: `Direct provider execution is not configured for \"${state.selectedProvider}\".`,
+          retryable: false,
         };
       }
 
-      const response = await client.invoke({
-        provider: state.selectedProvider,
-        model: state.selectedModel,
-        credential: credential.apiKey,
-        input: request.input,
-        stream: request.stream,
-      });
+      let response: AIHostedInvokeSuccess;
+
+      try {
+        response = await client.invoke({
+          provider: state.selectedProvider,
+          model: state.selectedModel,
+          credential: credential.apiKey,
+          input: request.input,
+          stream: request.stream,
+        });
+      } catch (error) {
+        return {
+          ok: false,
+          category: 'provider',
+          code: 'direct-invoke-failed',
+          message: toErrorMessage(error, 'Direct provider invocation failed.'),
+          retryable: true,
+        };
+      }
 
       return {
         ok: true,

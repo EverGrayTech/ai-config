@@ -155,6 +155,23 @@ Additional best-effort metadata may include:
 
 Host apps should prefer persisting the invocation result metadata itself rather than separately inspecting config state after generation completes.
 
+## Invocation error contract
+
+Failed invocations return a structured error envelope intended to be safe for direct host-app UI handling.
+
+Structured error fields include:
+
+- `category` — broad failure classification such as `configuration`, `authentication`, `network`, or `provider`
+- `code` — package-normalized failure code
+- `message` — host-displayable message
+- `retryable` — whether retry is plausibly safe
+
+Current normalized errors cover configuration failures, hosted auth failures, hosted invocation failures, token-refresh failures, and direct-provider invocation failures.
+
+The package does not silently fall back to fake or local generation when invocation fails.
+
+Host apps should surface these structured failures directly rather than rebuilding provider-specific error normalization layers.
+
 ## React usage
 
 The packaged React layer is intended for client-rendered browser settings UI.
