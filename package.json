@@ -27,11 +27,12 @@
     "url": "git+https://github.com/EverGrayTech/ai-config.git"
   },
   "scripts": {
-    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "build": "tsc -p tsconfig.json",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "demo": "npm --prefix examples/demo-app run dev",
     "demo:build": "npm --prefix examples/demo-app run build",
-    "lint": "pnpm biome check .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "test": "vitest run --coverage",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
