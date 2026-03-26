@@ -322,6 +322,31 @@ Bring-your-own-key validation must be supported, but networking strategy should 
 
 The package should not force direct client-side networking if a host app prefers mediated validation behavior.
 
+## Invocation Architecture
+
+When the package exposes unified invocation, it should normalize both execution routing and result/error contracts for host apps.
+
+### Invocation principles
+
+- host apps should call a package-owned invocation entrypoint rather than manually resolving provider/model/credential details
+- default hosted execution should route through the hosted gateway integration boundary
+- BYOK execution should route through a direct-provider integration boundary
+- successful invocation results should include canonical provenance metadata
+- failed invocations should return a structured error contract suitable for direct UI handling
+- the package must never silently fall back to fake/local generation when invocation fails
+
+### Hosted invocation posture
+
+- hosted execution should align with the `@evergraytech/ai-gateway` `/auth` and `/ai` flow
+- hosted token refresh/retry behavior may be package-managed when the host supplies the necessary gateway error classification hook
+- hosted success metadata may include normalized usage information when returned by the gateway
+
+### Direct-provider invocation posture
+
+- BYOK execution should use the selected provider, selected model, and stored credential from current config state
+- hosts should not need to reconstruct those inputs manually before invoking
+- direct-provider failures should normalize into the same structured error contract used by hosted execution
+
 ## Headless API Expectations
 
 The package should expose a clean headless surface supporting at least:
@@ -385,6 +410,7 @@ The package should feel straightforward to integrate into EverGray Tech’s Type
 - strict typing and clear exported boundaries
 - tree-shakeable exports where practical
 - documentation for headless and React usage
+- documentation for unified invocation, provenance metadata, and structured error handling
 - examples suitable for Next.js and client-oriented React apps
 - safe import behavior for SSR/build contexts
 - minimal unnecessary dependencies
@@ -404,11 +430,19 @@ At minimum, the package should include automated coverage for:
 - storage load/save/clear
 - corrupted storage recovery
 - schema migration basics
+- hosted invocation routing and token-refresh retry behavior
+- BYOK invocation routing and structured failure behavior
 
 ### Validation behavior
 
 - success, invalid, and error validation outcomes
 - secret redaction and sanitization behavior
+
+### Invocation behavior
+
+- canonical success metadata shape
+- canonical structured error shape
+- hosted and direct-path normalization behavior
 
 ### React behavior
 

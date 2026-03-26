@@ -19,9 +19,10 @@ This package is intended to solve that shared problem by providing:
 - local persistence and recovery behavior
 - provider and model registry abstractions
 - validation hooks and credential-management helpers
+- a thin unified invocation surface for hosted and BYOK execution
 - optional React components for settings UIs
 
-It is not intended to be the full AI execution runtime. It manages configuration, user preferences, provider metadata, and related UX concerns so host apps can integrate AI features with less duplication.
+It is not intended to be the full AI execution runtime. It manages configuration, user preferences, provider metadata, invocation routing, and related UX concerns so host apps can integrate AI features with less duplication.
 
 ## Core capabilities
 
@@ -31,6 +32,7 @@ It is not intended to be the full AI execution runtime. It manages configuration
 - generation settings such as temperature and output limits
 - local credential storage and management
 - rough usage and cost-awareness messaging
+- unified invocation routing across hosted and BYOK paths
 - headless and React-friendly integration paths
 
 ## Installation
@@ -53,6 +55,18 @@ Use the headless API from `@evergraytech/ai-config`, the optional React layer fr
 - import core APIs from `@evergraytech/ai-config`
 - import React APIs from `@evergraytech/ai-config/react`
 - import styles from `@evergraytech/ai-config/styles/base.css`
+
+## Headless invocation posture
+
+The headless layer now includes a thin package-owned invocation surface.
+
+- call `manager.invoke()` to route against the currently configured AI path
+- default hosted execution is expected to use an `@evergraytech/ai-gateway` adapter supplied through manager options
+- BYOK execution is expected to use a direct-provider client registry supplied through manager options
+- successful invocations return normalized provenance metadata such as provider, model, output, execution path, and optional usage/labels
+- failed invocations return a structured error contract with normalized category/code/message/retryability fields
+
+This is still intentionally narrower than a full runtime or orchestration framework.
 
 For full integration guidance, examples, styling guidance, and host-app customization, use [Consumption Guide](docs/consumption-guide.md).
 
@@ -82,7 +96,7 @@ That is a usability tradeoff, not a server-grade security model.
 
 The package is expected to be delivered as one publishable package with two logical layers:
 
-- headless/core exports for state, storage, registries, validation, and utilities
+- headless/core exports for state, storage, registries, validation, invocation, and utilities
 - optional React exports for hooks, context, and settings components
 
 ## Local development
