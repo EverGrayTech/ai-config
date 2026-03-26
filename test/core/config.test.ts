@@ -437,4 +437,194 @@ describe('headless foundation', () => {
     await manager.clearPersisted();
     expect(savedPayloadRef.current).toBeNull();
   });
+
+  it('invokes hosted execution through the configured gateway client', async () => {
+    const gateway = {
+      authenticate: vi.fn().mockResolvedValue({ token: 'hosted-token' }),
+      invoke: vi.fn().mockResolvedValue({
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        output: 'Hosted output',
+      }),
+    };
+
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway,
+      },
+    });
+
+    const result = await manager.invoke({ input: 'Hello hosted world' });
+
+    expect(gateway.authenticate).toHaveBeenCalledWith({
+      appId: 'test-app',
+      clientId: 'stable-client-id',
+    });
+    expect(gateway.invoke).toHaveBeenCalledWith({
+      token: 'hosted-token',
+      provider: undefined,
+      model: 'evergray-default',
+      input: 'Hello hosted world',
+      stream: undefined,
+    });
+    expect(result).toEqual({
+      ok: true,
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      output: 'Hosted output',
+      executionPath: 'hosted',
+    });
+  });
+
+  it('invokes direct BYOK execution through the configured provider registry', async () => {
+    const openaiClient = {
+      invoke: vi.fn().mockResolvedValue({
+        provider: 'openai',
+        model: 'gpt-4.1-mini',
+        output: 'BYOK output',
+      }),
+    };
+
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+      directProviders: {
+        getClient(provider) {
+          return provider === 'openai' ? openaiClient : undefined;
+        },
+      },
+    });
+
+    manager.setMode('byok');
+    manager.setProvider('openai');
+    manager.setModel('gpt-4.1-mini');
+    manager.setCredential('openai', { apiKey: 'sk-test-1234567890' });
+
+    const result = await manager.invoke({ input: 'Hello byok world' });
+
+    expect(openaiClient.invoke).toHaveBeenCalledWith({
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      credential: 'sk-test-1234567890',
+      input: 'Hello byok world',
+      stream: undefined,
+    });
+    expect(result).toEqual({
+      ok: true,
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      output: 'BYOK output',
+      executionPath: 'byok-direct',
+    });
+  });
+
+  it('returns a structured error when hosted execution is not configured', async () => {
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+    });
+
+    const result = await manager.invoke({ input: 'Hello hosted world' });
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'hosted-not-configured',
+      message: 'Hosted gateway execution is not configured.',
+    });
+  });
+
+  it('returns a structured error when BYOK execution is not configured', async () => {
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+    });
+
+    manager.setMode('byok');
+    manager.setProvider('openai');
+    manager.setModel('gpt-4.1-mini');
+    manager.setCredential('openai', { apiKey: 'sk-test-1234567890' });
+
+    const result = await manager.invoke({ input: 'Hello byok world' });
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'byok-not-configured',
+      message: 'Direct provider execution is not configured for "openai".',
+    });
+  });
+
+  it('returns a structured error when BYOK credentials are missing', async () => {
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+      directProviders: {
+        getClient: vi.fn(),
+      },
+    });
+
+    manager.setMode('byok');
+    manager.setProvider('openai');
+    manager.setModel('gpt-4.1-mini');
+
+    const result = await manager.invoke({ input: 'Hello byok world' });
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'missing-credential',
+      message: 'Missing credential for provider "openai".',
+    });
+  });
+
+  it('refreshes the hosted token and retries once when configured to do so', async () => {
+    const tokenExpiredError = new Error('token expired');
+    const gateway = {
+      authenticate: vi
+        .fn()
+        .mockResolvedValueOnce({ token: 'expired-token' })
+        .mockResolvedValueOnce({ token: 'fresh-token' }),
+      invoke: vi.fn().mockRejectedValueOnce(tokenExpiredError).mockResolvedValueOnce({
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        output: 'Hosted output after refresh',
+      }),
+    };
+
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway,
+        shouldRefreshToken: (error) => error === tokenExpiredError,
+      },
+    });
+
+    const result = await manager.invoke({ input: 'Hello hosted world' });
+
+    expect(gateway.authenticate).toHaveBeenCalledTimes(2);
+    expect(gateway.invoke).toHaveBeenNthCalledWith(1, {
+      token: 'expired-token',
+      provider: undefined,
+      model: 'evergray-default',
+      input: 'Hello hosted world',
+      stream: undefined,
+    });
+    expect(gateway.invoke).toHaveBeenNthCalledWith(2, {
+      token: 'fresh-token',
+      provider: undefined,
+      model: 'evergray-default',
+      input: 'Hello hosted world',
+      stream: undefined,
+    });
+    expect(result).toEqual({
+      ok: true,
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      output: 'Hosted output after refresh',
+      executionPath: 'hosted',
+    });
+  });
 });

@@ -49,6 +49,86 @@ export interface AIUsagePresentation {
   freeTierHint?: string;
 }
 
+export interface AIInvokeRequest {
+  input: string;
+  stream?: boolean;
+}
+
+export interface AIInvokeSuccess {
+  ok: true;
+  provider: string;
+  model: string;
+  output: string;
+  executionPath: 'hosted' | 'byok-direct';
+}
+
+export interface AIInvokeError {
+  ok: false;
+  code:
+    | 'missing-provider'
+    | 'missing-model'
+    | 'missing-credential'
+    | 'unsupported-provider'
+    | 'unsupported-mode'
+    | 'hosted-not-configured'
+    | 'byok-not-configured';
+  message: string;
+}
+
+export type AIInvokeResult = AIInvokeSuccess | AIInvokeError;
+
+export interface AIHostedAuthRequest {
+  appId: string;
+  clientId: string;
+}
+
+export interface AIHostedAuthResult {
+  token: string;
+  issuedAt?: string;
+  expiresAt?: string;
+}
+
+export interface AIHostedInvokeRequest {
+  token: string;
+  provider?: string;
+  model?: string;
+  input: string;
+  stream?: boolean;
+}
+
+export interface AIHostedInvokeSuccess {
+  provider: string;
+  model: string;
+  output: string;
+}
+
+export interface AIHostedGatewayClient {
+  authenticate(request: AIHostedAuthRequest): Promise<AIHostedAuthResult>;
+  invoke(request: AIHostedInvokeRequest): Promise<AIHostedInvokeSuccess>;
+}
+
+export interface AIHostedGatewayOptions {
+  clientId: string;
+  gateway: AIHostedGatewayClient;
+  shouldRefreshToken?: (error: unknown) => boolean;
+}
+
+export interface AIDirectInvokeRequest {
+  provider: AIProviderId;
+  model: string;
+  credential: string;
+  input: string;
+  stream?: boolean;
+}
+
+export interface AIDirectProviderClient {
+  invoke(request: AIDirectInvokeRequest): Promise<AIHostedInvokeSuccess>;
+}
+
+export interface AIDirectProviderRegistry {
+  getClient(provider: AIProviderId): AIDirectProviderClient | undefined;
+}
+
 export interface AIValidationResult {
   ok: boolean;
   status: 'valid' | 'invalid' | 'error';
@@ -132,6 +212,8 @@ export interface AIConfigManagerOptions {
   appDefinition: AIConfigAppDefinition;
   storage?: AIConfigStorageAdapter;
   initialState?: Partial<AIConfigState>;
+  hostedGateway?: AIHostedGatewayOptions;
+  directProviders?: AIDirectProviderRegistry;
 }
 
 export interface AIConfigChangeEvent {
@@ -156,4 +238,5 @@ export interface AIConfigManager {
   save(): Promise<void>;
   clearPersisted(): Promise<void>;
   getAppDefinition(): AIConfigAppDefinition;
+  invoke(request: AIInvokeRequest): Promise<AIInvokeResult>;
 }

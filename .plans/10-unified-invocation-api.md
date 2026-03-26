@@ -2,7 +2,7 @@
 
 ## Goal
 
-Add a focused plan for expanding `@evergraytech/ai-config` from configuration/state ownership into a thin shared invocation coordinator that lets host apps submit AI work through one package-owned API.
+Expand `@evergraytech/ai-config` from configuration/state ownership into a thin shared invocation coordinator that lets host apps submit AI work through one package-owned API.
 
 The desired outcome is that a host app can ask the currently configured AI to perform work without manually resolving provider, model, mode, credential, hosted token, or transport details.
 
@@ -92,40 +92,40 @@ When the current config resolves to BYOK mode:
 
 ### Phase 1: Define invocation entrypoint and request boundary
 
-- [ ] Introduce a canonical invocation request shape for host apps.
-- [ ] Define the app-facing invocation API surface on the headless layer.
-- [ ] Keep the initial request payload intentionally narrow and well-scoped.
-- [ ] Document how invocation reads the currently resolved config rather than requiring host-managed provider/model resolution.
-- [ ] Decide how the package maps its request shape onto the gateway’s normalized `input` plus optional `stream` contract for hosted execution.
+- [x] Introduce a canonical invocation request shape for host apps.
+- [x] Define the app-facing invocation API surface on the headless layer.
+- [x] Keep the initial request payload intentionally narrow and well-scoped.
+- [x] Document how invocation reads the currently resolved config rather than requiring host-managed provider/model resolution.
+- [x] Decide how the package maps its request shape onto the gateway’s normalized `input` plus optional `stream` contract for hosted execution.
 
 ### Phase 2: Define execution backend boundaries
 
-- [ ] Introduce a hosted execution adapter boundary aligned with `@evergraytech/ai-gateway`.
-- [ ] Introduce a direct-provider execution adapter boundary for BYOK mode.
-- [ ] Define how the package chooses the backend based on current config state.
-- [ ] Ensure unsupported or unconfigured backends fail clearly rather than silently falling back.
-- [ ] Define how the hosted adapter handles omitted provider/model values so the gateway can apply its configured hosted defaults.
-- [ ] Define how gateway token expiration and retry-after-refresh behavior are handled without pushing token orchestration back into host apps.
+- [x] Introduce a hosted execution adapter boundary aligned with `@evergraytech/ai-gateway`.
+- [x] Introduce a direct-provider execution adapter boundary for BYOK mode.
+- [x] Define how the package chooses the backend based on current config state.
+- [x] Ensure unsupported or unconfigured backends fail clearly rather than silently falling back.
+- [x] Define how the hosted adapter handles omitted provider/model values so the gateway can apply its configured hosted defaults.
+- [x] Define how gateway token expiration and retry-after-refresh behavior are handled without pushing token orchestration back into host apps.
 
 ### Phase 3: Define manager and host integration posture
 
-- [ ] Decide whether invocation should be exposed as a standalone function, manager method, or both.
-- [ ] Document how React and headless consumers call the shared invocation surface.
-- [ ] Ensure host apps can supply any required hosted gateway dependencies without re-owning orchestration logic.
+- [x] Decide whether invocation should be exposed as a standalone function, manager method, or both.
+- [x] Document how React and headless consumers call the shared invocation surface.
+- [x] Ensure host apps can supply any required hosted gateway dependencies without re-owning orchestration logic.
 
 ### Phase 4: Update documentation and scope language
 
-- [ ] Update package docs/spec language to reflect the thin invocation coordinator role.
-- [ ] Explicitly distinguish “unified invocation layer” from “full AI runtime/orchestration framework.”
-- [ ] Add downstream guidance for hosted mode versus BYOK mode behavior.
-- [ ] Document that hosted default behavior is the bounded default use of the existing gateway path rather than a separate hosted-mode API surface.
+- [x] Update package docs/spec language to reflect the thin invocation coordinator role.
+- [x] Explicitly distinguish “unified invocation layer” from “full AI runtime/orchestration framework.”
+- [x] Add downstream guidance for hosted mode versus BYOK mode behavior.
+- [x] Document that hosted default behavior is the bounded default use of the existing gateway path rather than a separate hosted-mode API surface.
 
 ## Acceptance criteria
 
 This plan is complete when:
 
-- [ ] a host app can call one package-owned invocation API without manually resolving provider/model/credential details
-- [ ] the package routes hosted/default mode through the gateway integration boundary
-- [ ] the package routes BYOK mode through the direct-provider integration boundary
-- [ ] the package does not introduce fake/local fallback generation
-- [ ] the package documentation clearly explains the new runtime boundary and remaining non-goals
+- [x] a host app can call one package-owned invocation API without manually resolving provider/model/credential details
+- [x] the package routes hosted/default mode through the gateway integration boundary
+- [x] the package routes BYOK mode through the direct-provider integration boundary
+- [x] the package does not introduce fake/local fallback generation
+- [x] the package documentation clearly explains the new runtime boundary and remaining non-goals

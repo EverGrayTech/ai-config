@@ -12,7 +12,7 @@ The package exists to standardize how EverGray Tech products:
 - present provider, model, and generation settings consistently across products
 - separate reusable configuration concerns from app-specific domain logic
 
-This package is a configuration and settings-management layer. It is not the complete inference runtime, agent framework, prompt orchestration system, or analytics platform.
+This package is primarily a configuration and settings-management layer. It may also provide a thin unified invocation layer for hosted and bring-your-own-key execution, but it is not the complete inference runtime, agent framework, prompt orchestration system, or analytics platform.
 
 ## Product Posture
 
@@ -64,6 +64,7 @@ The package should provide:
 6. state transition utilities and React-facing convenience APIs
 7. rough usage and cost-awareness presentation support
 8. optional React settings components that consuming apps can style or wrap
+9. a thin unified invocation entrypoint that routes across supported hosted and BYOK execution backends
 
 ### Out of scope
 
@@ -75,6 +76,14 @@ The package must not become responsible for:
 - storing secrets remotely
 - exact usage metering, invoice-grade pricing, or provider billing reconciliation
 - non-React UI implementations in v0
+
+The thin invocation layer, if present, should stay narrowly scoped to:
+
+- resolving the active config state
+- selecting the correct hosted or direct execution backend
+- normalizing request and result boundaries for host apps
+
+It should not expand into a general orchestration framework.
 
 ## Package Model
 
@@ -92,6 +101,7 @@ The core layer owns:
 - validation interfaces
 - usage/cost presentation helpers
 - sanitization and redaction utilities
+- unified invocation coordination for supported hosted and BYOK execution paths
 
 This layer must remain usable without importing the React UI surface.
 
@@ -328,6 +338,7 @@ The package should expose a clean headless surface supporting at least:
 - storage load/save/clear
 - state observation/subscription patterns where appropriate
 - debug-safe sanitization helpers
+- a package-owned invocation entrypoint or manager method where supported
 
 Pure state transition functions are preferred where practical, with React hooks layered on top as convenience APIs rather than the only integration path.
 

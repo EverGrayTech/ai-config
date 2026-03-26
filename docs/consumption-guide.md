@@ -4,7 +4,7 @@ This document is the canonical entrypoint for downstream developers integrating 
 
 ## What this package is for
 
-`@evergraytech/ai-config` provides a reusable, local-first AI configuration layer for TypeScript and React applications.
+`@evergraytech/ai-config` provides a reusable, local-first AI configuration layer for TypeScript and React applications, plus a thin unified invocation surface for hosted and bring-your-own-key execution.
 
 It helps host apps:
 
@@ -12,8 +12,9 @@ It helps host apps:
 - support bring-your-own-key provider workflows
 - persist AI settings locally in the browser
 - present provider/model/settings management consistently across products
+- invoke the currently configured AI without re-owning provider/model/credential routing
 
-It is not the full AI execution runtime.
+It is not the full AI execution runtime or orchestration framework.
 
 ## What to install
 
@@ -37,6 +38,15 @@ Do not treat it as:
 - a prompt orchestration framework
 - a billing or exact usage-metering system
 - a backend credential vault
+
+## Unified invocation posture
+
+The headless layer now supports a thin package-owned invocation surface.
+
+- host apps can call the currently configured AI through the package manager
+- default hosted execution is expected to route through `@evergraytech/ai-gateway`
+- BYOK execution is expected to route directly to the selected provider through a host-supplied direct-provider client boundary
+- the package owns invocation routing, but not a full chat runtime, workflow engine, or agent framework
 
 ## Headless usage
 
@@ -71,6 +81,58 @@ manager.setModel(getAvailableModels('openai', appDefinition)[0]?.id ?? null);
 const result = await validateCredential('openai', 'sk-example', appDefinition);
 console.log(result.status, manager.getState());
 ```
+
+## Headless invocation usage
+
+The initial invocation surface is manager-based.
+
+```ts
+import { createAIConfigManager, type AIConfigAppDefinition } from '@evergraytech/ai-config';
+
+const appDefinition: AIConfigAppDefinition = {
+  appId: 'plot-your-path',
+  defaultMode: {
+    enabled: true,
+    label: 'EverGray hosted AI',
+    provider: 'hosted',
+    model: 'gpt-4o-mini',
+  },
+  byok: {
+    enabled: true,
+    providers: ['openai'],
+  },
+};
+
+const manager = createAIConfigManager({
+  appDefinition,
+  hostedGateway: {
+    clientId: 'stable-client-id',
+    gateway: {
+      authenticate: async ({ appId, clientId }) => ({ token: `${appId}:${clientId}` }),
+      invoke: async ({ input, provider, model }) => ({
+        provider: provider ?? 'openai',
+        model: model ?? 'gpt-4o-mini',
+        output: `Hosted response for: ${input}`,
+      }),
+    },
+  },
+});
+
+const invokeResult = await manager.invoke({ input: 'Summarize this page.' });
+
+if (!invokeResult.ok) {
+  console.error(invokeResult.code, invokeResult.message);
+} else {
+  console.log(invokeResult.executionPath, invokeResult.provider, invokeResult.model, invokeResult.output);
+}
+```
+
+Current scope notes:
+
+- hosted/default invocation uses the gateway adapter boundary and maps to the gateway `input` contract
+- BYOK invocation uses a direct-provider client registry supplied to the manager
+- token refresh/retry handling is not fully implemented yet
+- the current result shape is intentionally minimal and will be expanded by the follow-on metadata and structured-error plans
 
 ## React usage
 
