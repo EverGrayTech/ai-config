@@ -69,25 +69,25 @@ Each route represents model-selection behavior, not credential ownership.
 
 ### Phase 1: Extend app-definition and route types
 
-- [ ] Introduce a typed app-definition shape for optional operation categories.
-- [ ] Define route-setting types for Default and category override records.
-- [ ] Preserve backward compatibility for apps that declare no categories.
-- [ ] Keep credential ownership global by provider.
+- [x] Introduce a typed app-definition shape for optional operation categories.
+- [x] Define route-setting types for Default and category override records.
+- [x] Preserve backward compatibility for apps that declare no categories.
+- [x] Keep credential ownership global by provider.
 
 ### Phase 2: Refactor state, merge logic, and persistence
 
-- [ ] Replace the single active provider/model/generation posture with route-based settings.
-- [ ] Add normalization rules for missing, stale, or invalid category route values.
-- [ ] Ensure disabled category overrides inherit Default without duplicating resolved state.
-- [ ] Preserve safe recovery behavior for persisted payloads that predate category routing.
+- [x] Replace the single active provider/model/generation posture with route-based settings.
+- [x] Add normalization rules for missing, stale, or invalid category route values.
+- [x] Ensure disabled category overrides inherit Default without duplicating resolved state.
+- [x] Preserve safe recovery behavior for persisted payloads that predate category routing.
 
 ### Phase 3: Add effective-route resolution and invocation support
 
-- [ ] Extend invocation request shape to accept an optional category identifier.
-- [ ] Resolve the effective route before hosted or direct-provider invocation.
-- [ ] Reject undeclared categories with a structured error contract.
-- [ ] Return structured configuration errors when an enabled category override is incomplete or invalid.
-- [ ] Keep Default invocation behavior unchanged when categories are absent or no category is requested.
+- [x] Extend invocation request shape to accept an optional category identifier.
+- [x] Resolve the effective route before hosted or direct-provider invocation.
+- [x] Reject undeclared categories with a structured error contract.
+- [x] Return structured configuration errors when an enabled category override is incomplete or invalid.
+- [x] Keep Default invocation behavior unchanged when categories are absent or no category is requested.
 
 ### Phase 4: Restructure React settings UI around shared setup and routing
 
@@ -103,7 +103,7 @@ Each route represents model-selection behavior, not credential ownership.
 
 - [ ] Update docs to explain shared provider credentials plus route-based model selection.
 - [ ] Document invocation behavior for undeclared categories and enabled-but-invalid overrides.
-- [ ] Add tests for inheritance, route normalization, category rejection, and route-based invocation.
+- [x] Add tests for inheritance, route normalization, category rejection, and route-based invocation.
 - [ ] Add React tests for default-only and categorized settings-panel behavior.
 
 ## Acceptance criteria
@@ -111,9 +111,9 @@ Each route represents model-selection behavior, not credential ownership.
 This plan is complete when:
 
 - [ ] apps can optionally declare operation categories without breaking existing integrations
-- [ ] provider credentials are configured once and reused across Default and category routes
-- [ ] category overrides may choose different providers and models from Default
-- [ ] disabled category overrides inherit Default behavior
-- [ ] enabled but invalid category overrides fail clearly rather than silently falling back
-- [ ] undeclared invocation categories are rejected as structured errors
+- [x] provider credentials are configured once and reused across Default and category routes
+- [x] category overrides may choose different providers and models from Default
+- [x] disabled category overrides inherit Default behavior
+- [x] enabled but invalid category overrides fail clearly rather than silently falling back
+- [x] undeclared invocation categories are rejected as structured errors
 - [ ] the settings UI remains a single cohesive widget and avoids unnecessary clutter

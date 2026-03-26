@@ -15,11 +15,15 @@ import {
   resetAIConfigState,
   sanitizeAIConfigForDebug,
   saveAIConfig,
+  setAIConfigCategoryEnabled,
   setAIConfigCredential,
   setAIConfigMode,
   setAIConfigModel,
   setAIConfigProvider,
+  setAIConfigRouteModel,
+  setAIConfigRouteProvider,
   updateAIConfigGeneration,
+  updateAIConfigRouteGeneration,
 } from '../../src';
 
 const appDefinition: AIConfigAppDefinition = {
@@ -768,5 +772,292 @@ describe('headless foundation', () => {
         totalTokens: 20,
       },
     });
+  });
+
+  it('creates disabled category routes for declared operation categories', () => {
+    const categorizedState = createDefaultAIConfigState({
+      ...appDefinition,
+      operationCategories: [
+        { key: 'evaluate', label: 'Evaluate' },
+        { key: 'write', label: 'Write' },
+      ],
+    });
+
+    expect(categorizedState.routes?.default.provider).toBe('hosted');
+    expect(categorizedState.routes?.categories.evaluate).toEqual({
+      enabled: false,
+      provider: null,
+      model: null,
+      generation: {},
+    });
+    expect(categorizedState.routes?.categories.write).toEqual({
+      enabled: false,
+      provider: null,
+      model: null,
+      generation: {},
+    });
+  });
+
+  it('rejects undeclared invocation categories as structured errors', async () => {
+    const manager = createAIConfigManager({
+      appDefinition: {
+        ...appDefinition,
+        operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+      },
+      storage: createMemoryStorage(),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway: {
+          authenticate: vi.fn(),
+          invoke: vi.fn(),
+        },
+      },
+    });
+
+    const result = await manager.invoke({ input: 'Hello hosted world', category: 'write' });
+
+    expect(result).toEqual({
+      ok: false,
+      category: 'configuration',
+      code: 'invalid-category',
+      message: 'Unknown AI operation category "write".',
+      retryable: false,
+      details: {
+        category: 'write',
+      },
+    });
+  });
+
+  it('uses the default route when a declared category override is disabled', async () => {
+    const gateway = {
+      authenticate: vi.fn().mockResolvedValue({ token: 'hosted-token' }),
+      invoke: vi.fn().mockResolvedValue({
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        output: 'Hosted output',
+      }),
+    };
+
+    const manager = createAIConfigManager({
+      appDefinition: {
+        ...appDefinition,
+        operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+      },
+      storage: createMemoryStorage(),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway,
+      },
+    });
+
+    await manager.invoke({ input: 'Hello hosted world', category: 'evaluate' });
+
+    expect(gateway.invoke).toHaveBeenCalledWith({
+      token: 'hosted-token',
+      provider: undefined,
+      model: 'evergray-default',
+      input: 'Hello hosted world',
+      stream: undefined,
+    });
+  });
+
+  it('returns a structured error when an enabled category override has no provider', async () => {
+    const categorizedAppDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+    };
+
+    const manager = createAIConfigManager({
+      appDefinition: categorizedAppDefinition,
+      storage: createMemoryStorage({
+        ...createDefaultAIConfigState(categorizedAppDefinition),
+        mode: 'byok',
+        routes: {
+          default: {
+            provider: 'openai',
+            model: 'gpt-4.1-mini',
+            generation: { ...appDefinition.defaultGeneration },
+          },
+          categories: {
+            evaluate: {
+              enabled: true,
+              provider: null,
+              model: null,
+              generation: {},
+            },
+          },
+        },
+      }),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway: {
+          authenticate: vi.fn().mockResolvedValue({ token: 'unused-token' }),
+          invoke: vi.fn(),
+        },
+      },
+    });
+
+    const seededState = manager.getState();
+    if (!seededState.routes) {
+      throw new Error('Expected routes to be initialized');
+    }
+    seededState.routes.categories.evaluate.enabled = true;
+    seededState.routes.categories.evaluate.provider = null;
+
+    const result = await manager.invoke({ input: 'Hello hosted world', category: 'evaluate' });
+
+    expect(result).toEqual({
+      ok: false,
+      category: 'configuration',
+      code: 'missing-provider',
+      message: 'AI category override "evaluate" is enabled but has no provider selected.',
+      retryable: false,
+      details: {
+        category: 'evaluate',
+      },
+    });
+  });
+
+  it('supports category route state updates through headless actions', () => {
+    const categorizedAppDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+    };
+
+    let state = createDefaultAIConfigState(categorizedAppDefinition);
+    state = setAIConfigCategoryEnabled(state, categorizedAppDefinition, 'evaluate', true);
+    state = setAIConfigRouteProvider(state, categorizedAppDefinition, 'evaluate', 'openai');
+    state = setAIConfigRouteModel(state, categorizedAppDefinition, 'evaluate', 'gpt-4.1-mini');
+    state = updateAIConfigRouteGeneration(state, categorizedAppDefinition, 'evaluate', {
+      temperature: 1.2,
+      maxOutputTokens: 222,
+    });
+
+    expect(state.routes?.categories.evaluate).toEqual({
+      enabled: true,
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      generation: {
+        temperature: 1.2,
+        maxOutputTokens: 222,
+      },
+    });
+  });
+
+  it('exposes category route actions through the manager', () => {
+    const categorizedAppDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+    };
+
+    const manager = createAIConfigManager({
+      appDefinition: categorizedAppDefinition,
+      storage: createMemoryStorage(),
+    });
+
+    manager.setCategoryEnabled('evaluate', true);
+    manager.setRouteProvider('evaluate', 'openai');
+    manager.setRouteModel('evaluate', 'gpt-4.1-mini');
+    manager.updateRouteGeneration('evaluate', { reasoningPreset: 'high' });
+
+    expect(manager.getState().routes?.categories.evaluate).toEqual({
+      enabled: true,
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      generation: {
+        temperature: 0.4,
+        maxOutputTokens: 800,
+        reasoningPreset: 'high',
+      },
+    });
+  });
+
+  it('uses default-route helpers when route action helpers receive the default route key', () => {
+    const byokDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      defaultMode: {
+        enabled: false,
+        label: 'Disabled default',
+      },
+      byok: {
+        enabled: true,
+        providers: ['openai', 'anthropic'],
+      },
+    };
+
+    let state = createDefaultAIConfigState(byokDefinition);
+    state = setAIConfigRouteProvider(state, byokDefinition, 'default', 'openai');
+    state = setAIConfigRouteModel(state, byokDefinition, 'default', 'gpt-4.1-mini');
+    state = updateAIConfigRouteGeneration(state, byokDefinition, 'default', {
+      maxOutputTokens: 321,
+    });
+
+    expect(state.selectedProvider).toBe('openai');
+    expect(state.selectedModel).toBe('gpt-4.1-mini');
+    expect(state.generation.maxOutputTokens).toBe(321);
+    expect(state.routes?.default).toEqual({
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      generation: {
+        temperature: 0.4,
+        maxOutputTokens: 321,
+      },
+    });
+  });
+
+  it('returns original state when category route helpers receive undeclared keys', () => {
+    const categorizedAppDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+    };
+
+    const state = createDefaultAIConfigState(categorizedAppDefinition);
+
+    expect(setAIConfigRouteProvider(state, categorizedAppDefinition, 'write', 'openai')).toBe(
+      state,
+    );
+    expect(setAIConfigRouteModel(state, categorizedAppDefinition, 'write', 'gpt-4.1-mini')).toBe(
+      state,
+    );
+    expect(
+      updateAIConfigRouteGeneration(state, categorizedAppDefinition, 'write', {
+        temperature: 0.7,
+      }),
+    ).toBe(state);
+    expect(setAIConfigCategoryEnabled(state, categorizedAppDefinition, 'write', true)).toBe(state);
+  });
+
+  it('returns original state when declared category route storage is unexpectedly missing', () => {
+    const categorizedAppDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+    };
+
+    const brokenState = {
+      ...createDefaultAIConfigState(categorizedAppDefinition),
+      routes: {
+        default: {
+          provider: 'hosted' as const,
+          model: 'evergray-default',
+          generation: { temperature: 0.4, maxOutputTokens: 800 },
+        },
+        categories: {},
+      },
+    } as AIConfigState;
+
+    expect(
+      setAIConfigRouteProvider(brokenState, categorizedAppDefinition, 'evaluate', 'openai'),
+    ).toBe(brokenState);
+    expect(
+      setAIConfigRouteModel(brokenState, categorizedAppDefinition, 'evaluate', 'gpt-4.1-mini'),
+    ).toBe(brokenState);
+    expect(
+      updateAIConfigRouteGeneration(brokenState, categorizedAppDefinition, 'evaluate', {
+        temperature: 0.9,
+      }),
+    ).toBe(brokenState);
+    expect(
+      setAIConfigCategoryEnabled(brokenState, categorizedAppDefinition, 'evaluate', true),
+    ).toBe(brokenState);
   });
 });

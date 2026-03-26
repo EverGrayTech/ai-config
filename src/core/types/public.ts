@@ -42,6 +42,22 @@ export interface AIGenerationSettings {
   reasoningPreset?: 'low' | 'medium' | 'high';
 }
 
+export interface AIConfigRouteSettings {
+  provider: AIProviderId | null;
+  model: string | null;
+  generation: AIGenerationSettings;
+}
+
+export interface AIConfigCategoryRouteSettings extends AIConfigRouteSettings {
+  enabled: boolean;
+}
+
+export interface AIOperationCategoryDefinition {
+  key: string;
+  label: string;
+  description?: string;
+}
+
 export interface AIUsagePresentation {
   modeLabel?: string;
   usageHint?: string;
@@ -51,6 +67,7 @@ export interface AIUsagePresentation {
 
 export interface AIInvokeRequest {
   input: string;
+  category?: string;
   stream?: boolean;
 }
 
@@ -83,6 +100,7 @@ export interface AIInvokeError {
     | 'missing-provider'
     | 'missing-model'
     | 'missing-credential'
+    | 'invalid-category'
     | 'unsupported-provider'
     | 'unsupported-mode'
     | 'hosted-not-configured'
@@ -207,6 +225,7 @@ export interface AIConfigAppDefinition {
   storageKey?: string;
   defaultMode?: AIDefaultModeDefinition;
   byok?: AIBYOKDefinition;
+  operationCategories?: AIOperationCategoryDefinition[];
   modelFilter?: (model: AIModelDescriptor) => boolean;
   providerOrder?: AIProviderId[];
   providerOverrides?: Partial<Record<AIProviderId, Partial<AIProviderDefinition>>>;
@@ -220,6 +239,10 @@ export interface AIConfigState {
   selectedModel: string | null;
   credentials: Record<string, AICredentialRecord>;
   generation: AIGenerationSettings;
+  routes?: {
+    default: AIConfigRouteSettings;
+    categories: Record<string, AIConfigCategoryRouteSettings>;
+  };
   usagePresentation?: AIUsagePresentation;
 }
 
@@ -251,6 +274,13 @@ export interface AIConfigManager {
   setMode(mode: AIConfigMode): AIConfigState;
   setProvider(provider: AIProviderId | null): AIConfigState;
   setModel(modelId: string | null): AIConfigState;
+  setRouteProvider(routeKey: 'default' | string, provider: AIProviderId | null): AIConfigState;
+  setRouteModel(routeKey: 'default' | string, modelId: string | null): AIConfigState;
+  updateRouteGeneration(
+    routeKey: 'default' | string,
+    settings: Partial<AIGenerationSettings>,
+  ): AIConfigState;
+  setCategoryEnabled(categoryKey: string, enabled: boolean): AIConfigState;
   setCredential(
     provider: AIProviderId,
     credential: Pick<AICredentialRecord, 'apiKey' | 'label'>,

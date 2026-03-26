@@ -5,22 +5,28 @@ import type {
   AIConfigChangeEvent,
   AIConfigManager,
   AIConfigManagerOptions,
+  AIConfigRouteSettings,
   AIConfigState,
   AIConfigStorageAdapter,
   AICredentialRecord,
   AIGenerationSettings,
   AIHostedAuthResult,
   AIHostedInvokeSuccess,
+  AIInvokeError,
   AIProviderId,
 } from '../types/public';
 import {
   clearAIConfigCredential,
   resetAIConfigState,
+  setAIConfigCategoryEnabled,
   setAIConfigCredential,
   setAIConfigMode,
   setAIConfigModel,
   setAIConfigProvider,
+  setAIConfigRouteModel,
+  setAIConfigRouteProvider,
   updateAIConfigGeneration,
+  updateAIConfigRouteGeneration,
 } from './actions';
 import { mergeAIConfigWithAppDefinition } from './merge';
 
@@ -30,6 +36,103 @@ function getMissingCredentialMessage(provider: AIProviderId): string {
 
 function toErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
+}
+
+function getDeclaredCategoryKeys(options: AIConfigManagerOptions): Set<string> {
+  return new Set((options.appDefinition.operationCategories ?? []).map((category) => category.key));
+}
+
+function resolveInvokeRoute(
+  state: AIConfigState,
+  options: AIConfigManagerOptions,
+  category?: string,
+): { route: AIConfigRouteSettings; mode: 'default' | 'byok' } | { error: AIInvokeError } {
+  const defaultRoute = state.routes?.default ?? {
+    provider: state.selectedProvider,
+    model: state.selectedModel,
+    generation: state.generation,
+  };
+
+  if (!category) {
+    return {
+      route: defaultRoute,
+      mode: state.mode,
+    };
+  }
+
+  const declaredCategories = getDeclaredCategoryKeys(options);
+  if (!declaredCategories.has(category)) {
+    return {
+      error: {
+        ok: false,
+        category: 'configuration',
+        code: 'invalid-category',
+        message: `Unknown AI operation category "${category}".`,
+        retryable: false,
+        details: {
+          category,
+        },
+      },
+    };
+  }
+
+  const categoryRoute = state.routes?.categories?.[category];
+  if (categoryRoute?.enabled && categoryRoute.provider == null) {
+    return {
+      error: {
+        ok: false,
+        category: 'configuration',
+        code: 'missing-provider',
+        message: `AI category override "${category}" is enabled but has no provider selected.`,
+        retryable: false,
+        details: {
+          category,
+        },
+      },
+    };
+  }
+
+  if (!categoryRoute) {
+    return {
+      error: {
+        ok: false,
+        category: 'configuration',
+        code: 'invalid-category',
+        message: `Unknown AI operation category "${category}".`,
+        retryable: false,
+        details: {
+          category,
+        },
+      },
+    };
+  }
+
+  if (!categoryRoute?.enabled) {
+    return {
+      route: defaultRoute,
+      mode: state.mode,
+    };
+  }
+
+  if (!categoryRoute.provider) {
+    return {
+      error: {
+        ok: false,
+        category: 'configuration',
+        code: 'missing-provider',
+        message: `AI category override "${category}" is enabled but has no provider selected.`,
+        retryable: false,
+        details: {
+          category,
+        },
+      },
+    };
+  }
+
+  return {
+    route: categoryRoute,
+    mode: categoryRoute.provider === 'hosted' ? 'default' : 'byok',
+  };
 }
 
 export function createAIConfigManager(options: AIConfigManagerOptions): AIConfigManager {
@@ -70,6 +173,20 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
     },
     setModel(modelId) {
       return assign(setAIConfigModel(state, options.appDefinition, modelId));
+    },
+    setRouteProvider(routeKey, provider) {
+      return assign(setAIConfigRouteProvider(state, options.appDefinition, routeKey, provider));
+    },
+    setRouteModel(routeKey, modelId) {
+      return assign(setAIConfigRouteModel(state, options.appDefinition, routeKey, modelId));
+    },
+    updateRouteGeneration(routeKey, settings) {
+      return assign(
+        updateAIConfigRouteGeneration(state, options.appDefinition, routeKey, settings),
+      );
+    },
+    setCategoryEnabled(categoryKey, enabled) {
+      return assign(setAIConfigCategoryEnabled(state, options.appDefinition, categoryKey, enabled));
     },
     setCredential(
       provider: AIProviderId,
@@ -112,7 +229,15 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       assign(resetAIConfigState(options.appDefinition));
     },
     async invoke(request) {
-      if (!state.selectedProvider) {
+      const resolved = resolveInvokeRoute(state, options, request.category);
+      if ('error' in resolved) {
+        return resolved.error;
+      }
+
+      const selectedProvider = resolved.route.provider;
+      const selectedModel = resolved.route.model;
+
+      if (!selectedProvider) {
         return {
           ok: false,
           category: 'configuration',
@@ -122,7 +247,7 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         };
       }
 
-      if (state.mode === 'default') {
+      if (resolved.mode === 'default') {
         if (!options.hostedGateway) {
           return {
             ok: false,
@@ -152,8 +277,8 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
 
         const invokeRequest = {
           token: auth.token,
-          provider: state.selectedProvider === 'hosted' ? undefined : state.selectedProvider,
-          model: state.selectedModel ?? undefined,
+          provider: selectedProvider === 'hosted' ? undefined : selectedProvider,
+          model: selectedModel ?? undefined,
           input: request.input,
           stream: request.stream,
         };
@@ -223,17 +348,17 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         };
       }
 
-      if (state.mode !== 'byok') {
+      if (resolved.mode !== 'byok') {
         return {
           ok: false,
           category: 'configuration',
           code: 'unsupported-mode',
-          message: `Unsupported AI mode \"${state.mode}\".`,
+          message: `Unsupported AI mode "${resolved.mode}".`,
           retryable: false,
         };
       }
 
-      if (!state.selectedModel) {
+      if (!selectedModel) {
         return {
           ok: false,
           category: 'configuration',
@@ -243,24 +368,24 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         };
       }
 
-      const credential = state.credentials[state.selectedProvider];
+      const credential = state.credentials[selectedProvider];
       if (!credential?.apiKey) {
         return {
           ok: false,
           category: 'configuration',
           code: 'missing-credential',
-          message: getMissingCredentialMessage(state.selectedProvider),
+          message: getMissingCredentialMessage(selectedProvider),
           retryable: false,
         };
       }
 
-      const client = options.directProviders?.getClient(state.selectedProvider);
+      const client = options.directProviders?.getClient(selectedProvider);
       if (!client) {
         return {
           ok: false,
           category: 'configuration',
           code: 'byok-not-configured',
-          message: `Direct provider execution is not configured for \"${state.selectedProvider}\".`,
+          message: `Direct provider execution is not configured for "${selectedProvider}".`,
           retryable: false,
         };
       }
@@ -269,8 +394,8 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
 
       try {
         response = await client.invoke({
-          provider: state.selectedProvider,
-          model: state.selectedModel,
+          provider: selectedProvider,
+          model: selectedModel,
           credential: credential.apiKey,
           input: request.input,
           stream: request.stream,
@@ -291,9 +416,8 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         model: response.model,
         output: response.output,
         executionPath: 'byok-direct',
-        providerLabel: getProviderById(state.selectedProvider, options.appDefinition)?.label,
-        modelLabel: getModelById(state.selectedProvider, response.model, options.appDefinition)
-          ?.label,
+        providerLabel: getProviderById(selectedProvider, options.appDefinition)?.label,
+        modelLabel: getModelById(selectedProvider, response.model, options.appDefinition)?.label,
         usage: response.usage,
       };
     },

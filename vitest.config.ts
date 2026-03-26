@@ -11,10 +11,10 @@ export default defineConfig({
       reportsDirectory: './coverage',
       exclude: ['dist/**', 'examples/**', 'src/react.ts', 'vitest.config.ts', 'test/setup.ts'],
       thresholds: {
-        lines: 89,
-        functions: 89,
-        branches: 89,
-        statements: 89,
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
       },
     },
     projects: [

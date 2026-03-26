@@ -101,6 +101,13 @@ export interface AIConfigActions {
   setMode: (mode: AIConfigState['mode']) => AIConfigState;
   setProvider: (provider: AIProviderId | null) => AIConfigState;
   setModel: (modelId: string | null) => AIConfigState;
+  setRouteProvider: (routeKey: 'default' | string, provider: AIProviderId | null) => AIConfigState;
+  setRouteModel: (routeKey: 'default' | string, modelId: string | null) => AIConfigState;
+  updateRouteGeneration: (
+    routeKey: 'default' | string,
+    settings: Partial<AIGenerationSettings>,
+  ) => AIConfigState;
+  setCategoryEnabled: (categoryKey: string, enabled: boolean) => AIConfigState;
   setCredential: (
     provider: AIProviderId,
     credential: Pick<AICredentialRecord, 'apiKey' | 'label'>,
@@ -120,6 +127,11 @@ export function useAIConfigActions(): AIConfigActions {
     setMode: (mode) => manager.setMode(mode),
     setProvider: (provider) => manager.setProvider(provider),
     setModel: (modelId) => manager.setModel(modelId),
+    setRouteProvider: (routeKey, provider) => manager.setRouteProvider(routeKey, provider),
+    setRouteModel: (routeKey, modelId) => manager.setRouteModel(routeKey, modelId),
+    updateRouteGeneration: (routeKey, settings) =>
+      manager.updateRouteGeneration(routeKey, settings),
+    setCategoryEnabled: (categoryKey, enabled) => manager.setCategoryEnabled(categoryKey, enabled),
     setCredential: (provider, credential) => manager.setCredential(provider, credential),
     clearCredential: (provider) => manager.clearCredential(provider),
     updateGeneration: (settings) => manager.updateGeneration(settings),

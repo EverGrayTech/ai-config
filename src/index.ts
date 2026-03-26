@@ -40,10 +40,14 @@ export {
   clearAIConfigCredential,
   resetAIConfigState,
   setAIConfigCredential,
+  setAIConfigCategoryEnabled,
   setAIConfigMode,
   setAIConfigModel,
   setAIConfigProvider,
+  setAIConfigRouteModel,
+  setAIConfigRouteProvider,
   updateAIConfigGeneration,
+  updateAIConfigRouteGeneration,
 } from './core/config/actions';
 export { createAIConfigManager } from './core/config/manager';
 export { builtInProviders } from './core/providers/builtins';

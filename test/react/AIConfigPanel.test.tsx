@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -273,5 +274,83 @@ describe('AIConfigPanel', () => {
     expect(
       screen.getByText('Save key').closest('[data-eg-ai-config-actions="api-key"]'),
     ).not.toBeNull();
+  });
+
+  it('shows only default route controls when no categories are declared', () => {
+    render(
+      <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+        <AIConfigPanel />
+      </AIConfigProvider>,
+    );
+
+    expect(screen.getByLabelText('AI provider')).toBeInTheDocument();
+    expect(screen.queryByText('Enable category override')).not.toBeInTheDocument();
+    expect(screen.getByText('Generation settings')).toBeInTheDocument();
+  });
+
+  it('renders categorized route controls with collapsible overrides', async () => {
+    const user = userEvent.setup();
+    const categorizedAppDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      operationCategories: [
+        { key: 'evaluate', label: 'Evaluate', description: 'Evaluation tasks' },
+        { key: 'write', label: 'Write' },
+      ],
+    };
+
+    render(
+      <AIConfigProvider appDefinition={categorizedAppDefinition} loadOnMount={false}>
+        <AIConfigPanel />
+        <StateProbe />
+      </AIConfigProvider>,
+    );
+
+    expect(screen.getByText('Evaluate')).toBeInTheDocument();
+    expect(screen.getByText('Write')).toBeInTheDocument();
+    expect(screen.getAllByText('Uses Default route settings.')).toHaveLength(2);
+
+    const evaluateSection = screen.getByText('Evaluate').closest('details');
+    if (!evaluateSection) {
+      throw new Error('Expected evaluate section');
+    }
+
+    await user.click(screen.getAllByText('Evaluate')[0]);
+    await user.click(within(evaluateSection).getByLabelText('Enable category override'));
+
+    expect(screen.getByLabelText('Evaluate provider')).toBeInTheDocument();
+    expect(screen.getByLabelText('Evaluate model')).toBeInTheDocument();
+    expect(screen.getByText('Evaluate generation settings')).toBeInTheDocument();
+  });
+
+  it('updates category-specific provider, model, and generation settings', async () => {
+    const user = userEvent.setup();
+    const categorizedAppDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+    };
+
+    render(
+      <AIConfigProvider appDefinition={categorizedAppDefinition} loadOnMount={false}>
+        <AIConfigPanel />
+        <StateProbe />
+      </AIConfigProvider>,
+    );
+
+    await user.click(screen.getByText('Evaluate'));
+    await user.click(screen.getByLabelText('Enable category override'));
+    await user.selectOptions(screen.getByLabelText('Evaluate provider'), 'openai');
+    await user.selectOptions(screen.getByLabelText('Evaluate model'), 'gpt-4.1-mini');
+    await user.click(screen.getByText('Evaluate generation settings'));
+
+    const tempInputs = screen.getAllByLabelText('Temperature');
+    const evaluateTemperature = tempInputs[tempInputs.length - 1];
+    await user.clear(evaluateTemperature);
+    await user.type(evaluateTemperature, '1.1');
+
+    const stateText = screen.getByTestId('state-probe').textContent ?? '';
+    expect(stateText).toContain('"evaluate":{"enabled":true');
+    expect(stateText).toContain('"provider":"openai"');
+    expect(stateText).toContain('"model":"gpt-4.1-mini"');
+    expect(stateText).toContain('"temperature":1.1');
   });
 });
