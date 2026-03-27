@@ -59,10 +59,30 @@ pnpm demo:build
 The demo app is organized to make future component validation straightforward:
 
 - **Overview** — validate the composed `AIConfigPanel`
+- **Route validation** — validate default-only and categorized invocation routing against the hosted gateway
 - **Component gallery** — validate individual exported components in focused compositions
 - **State scenarios** — validate important state combinations such as default mode, BYOK mode, and saved-key states
 
 When adding new components, prefer extending the gallery and state-scenarios screens rather than creating ad hoc demo pages.
+
+### Hosted gateway validation setup
+
+The route-validation screen can call a deployed `ai-gateway` instance.
+
+Set demo-specific Vite environment variables before running `pnpm demo`:
+
+```bash
+VITE_AI_GATEWAY_BASE_URL=https://your-gateway.example.com
+VITE_AI_GATEWAY_CLIENT_ID=your-demo-client-id
+```
+
+The demo uses these values to:
+
+- authenticate against `POST /auth`
+- invoke against `POST /ai`
+- show request/response logs directly in the browser UI
+
+If the environment variables are not set, the demo falls back to placeholder values so the screen still renders, but live hosted invocation will not succeed until real values are provided.
 
 ## Styling validation workflow
 
