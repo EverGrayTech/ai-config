@@ -2,7 +2,7 @@ export const AI_CONFIG_SCHEMA_VERSION = 1;
 
 export type AIConfigMode = 'default' | 'byok';
 
-export type AIProviderId = 'openai' | 'anthropic' | 'google' | 'openrouter' | 'custom' | 'hosted';
+export type AIProviderId = 'openai' | 'anthropic' | 'gemini' | 'openrouter' | 'custom' | 'hosted';
 
 export interface AIModelCapabilities {
   text?: boolean;
@@ -76,7 +76,7 @@ export interface AIInvokeSuccess {
   provider: string;
   model: string;
   output: string;
-  executionPath: 'hosted' | 'byok-direct';
+  executionPath: 'hosted' | 'byok-gateway';
   providerLabel?: string;
   modelLabel?: string;
   usage?: {
@@ -139,6 +139,7 @@ export interface AIHostedInvokeRequest {
   token: string;
   provider?: string;
   model?: string;
+  credential?: string;
   input: string;
   stream?: boolean;
 }
@@ -278,7 +279,6 @@ export interface AIConfigManagerOptions {
   storage?: AIConfigStorageAdapter;
   initialState?: Partial<AIConfigState>;
   hostedGateway?: AIHostedGatewayOptions;
-  directProviders?: AIDirectProviderRegistry;
 }
 
 export interface AIConfigChangeEvent {

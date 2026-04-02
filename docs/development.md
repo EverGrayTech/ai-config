@@ -87,6 +87,17 @@ The demo uses these values to:
 - invoke against `POST /ai`
 - show request/response logs directly in the browser UI
 
+The route-validation harness now follows the finalized shared `ai-gateway` contract:
+
+- **hosted/default requests** omit `provider`, `model`, and `X-EG-AI-Provider-Credential`
+- **explicit BYOK requests** send all three together:
+  - `provider`
+  - `model`
+  - `X-EG-AI-Provider-Credential`
+- mixed or partial request shapes are considered invalid and should be treated as integration regressions during validation
+
+When validating provider coverage, use `gemini` as the canonical provider id rather than `google` for gateway-facing behavior.
+
 `VITE_AI_GATEWAY_CLIENT_ID` remains demo-app-scoped. It is consumed only by the local Vite demo build and does not become part of the published package API or a shared default for downstream applications.
 
 If `VITE_AI_GATEWAY_BASE_URL` is not set, the demo uses the live hosted gateway URL. If `VITE_AI_GATEWAY_CLIENT_ID` is not set, the screen still renders with a fallback demo value, but hosted auth/invocation may fail until a real demo client ID is provided.
@@ -122,6 +133,12 @@ Before considering a change ready, verify:
 - `pnpm test`
 - `pnpm build`
 - demo behavior if React UI or styling changed
+
+For invocation-related changes, also verify that:
+
+- hosted/default demo requests reach the gateway without provider/model/credential fields
+- BYOK demo requests send provider + model + `X-EG-AI-Provider-Credential` together
+- browser-side diagnostics redact credential material while still making the chosen request shape obvious
 
 ## Notes on current demo-tooling behavior
 

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
+import { AIConfigAppDefinition } from '@evergraytech/ai-config';
 
 import { DemoNav } from './components/DemoNav';
 import { DemoShell } from './components/DemoShell';
@@ -21,7 +21,7 @@ const appDefinition: AIConfigAppDefinition = {
   },
   byok: {
     enabled: true,
-    providers: ['anthropic', 'google', 'openai', 'openrouter'],
+    providers: ['anthropic', 'gemini', 'openai', 'openrouter'],
   },
   defaultGeneration: {
     temperature: 0.4,

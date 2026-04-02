@@ -56,18 +56,18 @@ export const builtInProviders: AIProviderDefinition[] = [
     ],
   },
   {
-    id: 'google',
-    label: 'Google AI',
-    credentialLabel: 'Google AI API key',
+    id: 'gemini',
+    label: 'Gemini',
+    credentialLabel: 'Gemini API key',
     credentialPlaceholder: 'AIza...',
     supportsBYOK: true,
-    helpText: 'Use your own Google AI key for Gemini access.',
+    helpText: 'Use your own Gemini API key for direct Gemini access.',
     docsUrl: 'https://aistudio.google.com/app/apikey',
     models: [
       {
         id: 'gemini-2.0-flash',
         label: 'Gemini 2.0 Flash',
-        provider: 'google',
+        provider: 'gemini',
         capabilities: { text: true, vision: true, structuredOutput: true, streaming: true },
         costHint: 'low',
         status: 'active',
@@ -84,7 +84,7 @@ export const builtInProviders: AIProviderDefinition[] = [
     docsUrl: 'https://openrouter.ai/keys',
     models: [
       {
-        id: 'openrouter/anthropic/claude-3.5-sonnet',
+        id: 'anthropic/claude-3.5-sonnet',
         label: 'Claude 3.5 Sonnet via OpenRouter',
         provider: 'openrouter',
         capabilities: { text: true, reasoning: true, streaming: true },
@@ -92,7 +92,7 @@ export const builtInProviders: AIProviderDefinition[] = [
         status: 'active',
       },
       {
-        id: 'openrouter/openai/gpt-4o-mini',
+        id: 'openai/gpt-4o-mini',
         label: 'GPT-4o Mini via OpenRouter',
         provider: 'openrouter',
         capabilities: { text: true, streaming: true },

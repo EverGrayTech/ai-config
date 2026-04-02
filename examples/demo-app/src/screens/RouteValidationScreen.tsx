@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { createAIConfigManager, sanitizeAIConfigForDebug } from '@evergraytech/ai-config';
-import type {
+import {
+  createAIConfigManager,
+  sanitizeAIConfigForDebug,
   AIConfigAppDefinition,
   AIConfigManager,
   AIConfigState,
@@ -54,25 +55,29 @@ function resolveDisplayedInvokeSnapshot(
   };
 
   if (!category) {
+    const isHostedDefault = state.mode === 'default' && defaultRoute.provider === 'hosted';
+
     return {
       category: null,
-      mode: state.mode,
+      requestShape: isHostedDefault ? 'hosted-default' : 'explicit-byok',
       route: defaultRoute,
     };
   }
 
   const categoryRoute = state.routes?.categories?.[category];
   if (!categoryRoute || !categoryRoute.enabled) {
+    const isHostedDefault = state.mode === 'default' && defaultRoute.provider === 'hosted';
+
     return {
       category,
-      mode: state.mode,
+      requestShape: isHostedDefault ? 'hosted-default' : 'explicit-byok',
       route: defaultRoute,
     };
   }
 
   return {
     category,
-    mode: categoryRoute.provider === 'hosted' ? 'default' : 'byok',
+    requestShape: categoryRoute.provider === 'hosted' ? 'hosted-default' : 'explicit-byok',
     route: categoryRoute,
   };
 }
@@ -130,7 +135,10 @@ function createGatewayClient(
     async invoke(request: AIHostedInvokeRequest): Promise<AIHostedInvokeSuccess> {
       appendLog('gateway', 'invoke:request', {
         url: `${baseUrl}/ai`,
-        body: request,
+        body: {
+          ...request,
+          credential: request.credential ? '[REDACTED]' : undefined,
+        },
       });
 
       const response = await fetch(`${baseUrl}/ai`, {
@@ -138,6 +146,11 @@ function createGatewayClient(
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${request.token}`,
+          ...(request.credential
+            ? {
+                'X-EG-AI-Provider-Credential': request.credential,
+              }
+            : {}),
         },
         body: JSON.stringify({
           provider: request.provider,
@@ -308,7 +321,7 @@ function ValidationHarness({
             <h4>AI Configuration</h4>
             <p>Adjust provider, model, credentials, and generation settings.</p>
           </div>
-          <AIConfigProvider appDefinition={appDefinition} manager={manager} loadOnMount={false}>
+          <AIConfigProvider appDefinition={appDefinition} manager={manager}>
             <AIConfigPanel />
           </AIConfigProvider>
         </section>
@@ -395,10 +408,6 @@ function ValidationHarness({
                   2,
                 )}
               </pre>
-              <p className="demo-result-alert-hint">
-                Snapshot captured when Invoke was pressed. If this does not match the panel, the
-                panel change likely has not propagated yet.
-              </p>
             </section>
 
             <section
@@ -420,9 +429,7 @@ function ValidationHarness({
                   </span>
                   <span>{invokeMeta.requestedAt}</span>
                 </div>
-              ) : (
-                <p className="demo-result-empty">No invocation attempted yet.</p>
-              )}
+              ) : null}
               {!invokeResult?.ok && invokeResult ? (
                 <div className="demo-result-alert" role="alert">
                   <strong>{invokeResult.code}</strong>
@@ -482,7 +489,7 @@ export function RouteValidationScreen() {
       },
       byok: {
         enabled: true,
-        providers: ['anthropic', 'google', 'openai', 'openrouter'],
+        providers: ['anthropic', 'gemini', 'openai', 'openrouter'],
       },
       defaultGeneration: {
         temperature: 0.4,
@@ -503,7 +510,7 @@ export function RouteValidationScreen() {
       },
       byok: {
         enabled: true,
-        providers: ['anthropic', 'google', 'openai', 'openrouter'],
+        providers: ['anthropic', 'gemini', 'openai', 'openrouter'],
       },
       defaultGeneration: {
         temperature: 0.4,

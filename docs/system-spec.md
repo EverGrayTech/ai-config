@@ -20,7 +20,7 @@ This package is primarily a configuration and settings-management layer. It may 
 
 - reduce startup friction for non-technical users
 - preserve a no-setup path when a host app can provide a default AI mode
-- support power-user bring-your-own-key workflows without backend dependency
+- support power-user bring-your-own-key workflows while keeping execution on the shared gateway boundary
 - keep user-controlled AI settings local-first
 - make provider and model selection behavior consistent across EverGray Tech apps
 - provide a polished, developer-friendly integration surface for TypeScript and React applications
@@ -80,7 +80,7 @@ The package must not become responsible for:
 The thin invocation layer, if present, should stay narrowly scoped to:
 
 - resolving the active config state
-- selecting the correct hosted or direct execution backend
+- selecting the correct gateway-mediated hosted or explicit-BYOK execution shape
 - normalizing request and result boundaries for host apps
 
 It should not expand into a general orchestration framework.
@@ -330,7 +330,7 @@ When the package exposes unified invocation, it should normalize both execution 
 
 - host apps should call a package-owned invocation entrypoint rather than manually resolving provider/model/credential details
 - default hosted execution should route through the hosted gateway integration boundary
-- BYOK execution should route through a direct-provider integration boundary
+- BYOK execution should route through `@evergraytech/ai-gateway` using an explicit provider/model/credential request shape
 - successful invocation results should include canonical provenance metadata
 - failed invocations should return a structured error contract suitable for direct UI handling
 - the package must never silently fall back to fake/local generation when invocation fails
@@ -345,7 +345,7 @@ When the package exposes unified invocation, it should normalize both execution 
 
 - BYOK execution should use the selected provider, selected model, and stored credential from current config state
 - hosts should not need to reconstruct those inputs manually before invoking
-- direct-provider failures should normalize into the same structured error contract used by hosted execution
+- gateway-mediated BYOK failures should normalize into the same structured error contract used by hosted execution
 
 ## Headless API Expectations
 

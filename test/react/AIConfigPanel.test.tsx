@@ -36,7 +36,7 @@ const appDefinition: AIConfigAppDefinition = {
   },
   byok: {
     enabled: true,
-    providers: ['anthropic', 'google', 'openai'],
+    providers: ['anthropic', 'gemini', 'openai'],
   },
   defaultGeneration: {
     temperature: 0.4,

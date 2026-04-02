@@ -45,7 +45,7 @@ The headless layer now supports a thin package-owned invocation surface.
 
 - host apps can call the currently configured AI through the package manager
 - default hosted execution is expected to route through `@evergraytech/ai-gateway`
-- BYOK execution is expected to route directly to the selected provider through a host-supplied direct-provider client boundary
+- BYOK execution is expected to route through `@evergraytech/ai-gateway` using the explicit BYOK request shape
 - the package owns invocation routing, but not a full chat runtime, workflow engine, or agent framework
 
 ## Headless usage
@@ -189,7 +189,7 @@ Behavior guarantees:
 Current scope notes:
 
 - hosted/default invocation uses the gateway adapter boundary and maps to the gateway `input` contract
-- BYOK invocation uses a direct-provider client registry supplied to the manager
+- BYOK invocation uses the same gateway-mediated `/ai` surface and sends provider + model + credential together
 - token refresh/retry handling is not fully implemented yet
 - successful invocation results now include canonical provider/model/output fields plus execution-path metadata, optional human-readable labels, and optional normalized usage when provided by the hosted gateway or provider adapter
 
@@ -225,7 +225,7 @@ Structured error fields include:
 - `message` — host-displayable message
 - `retryable` — whether retry is plausibly safe
 
-Current normalized errors cover configuration failures, hosted auth failures, hosted invocation failures, token-refresh failures, and direct-provider invocation failures.
+Current normalized errors cover configuration failures, hosted auth failures, hosted invocation failures, token-refresh failures, and gateway-mediated BYOK invocation failures.
 
 The package does not silently fall back to fake or local generation when invocation fails.
 

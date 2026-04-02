@@ -99,7 +99,7 @@ describe('headless foundation', () => {
   it('normalizes invalid providers safely', () => {
     const state = mergeAIConfigWithAppDefinition(appDefinition, {
       mode: 'byok',
-      selectedProvider: 'google',
+      selectedProvider: 'gemini',
     });
 
     expect(state.selectedProvider).toBeNull();
@@ -474,8 +474,6 @@ describe('headless foundation', () => {
     });
     expect(gateway.invoke).toHaveBeenCalledWith({
       token: 'hosted-token',
-      provider: undefined,
-      model: undefined,
       input: 'Hello hosted world',
       stream: undefined,
     });
@@ -495,8 +493,9 @@ describe('headless foundation', () => {
     });
   });
 
-  it('invokes direct BYOK execution through the configured provider registry', async () => {
-    const openaiClient = {
+  it('invokes BYOK execution through the configured gateway client', async () => {
+    const gateway = {
+      authenticate: vi.fn().mockResolvedValue({ token: 'hosted-token' }),
       invoke: vi.fn().mockResolvedValue({
         provider: 'openai',
         model: 'gpt-4.1-mini',
@@ -507,10 +506,9 @@ describe('headless foundation', () => {
     const manager = createAIConfigManager({
       appDefinition,
       storage: createMemoryStorage(),
-      directProviders: {
-        getClient(provider) {
-          return provider === 'openai' ? openaiClient : undefined;
-        },
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway,
       },
     });
 
@@ -521,7 +519,8 @@ describe('headless foundation', () => {
 
     const result = await manager.invoke({ input: 'Hello byok world' });
 
-    expect(openaiClient.invoke).toHaveBeenCalledWith({
+    expect(gateway.invoke).toHaveBeenCalledWith({
+      token: 'hosted-token',
       provider: 'openai',
       model: 'gpt-4.1-mini',
       credential: 'sk-test-1234567890',
@@ -533,7 +532,7 @@ describe('headless foundation', () => {
       provider: 'openai',
       model: 'gpt-4.1-mini',
       output: 'BYOK output',
-      executionPath: 'byok-direct',
+      executionPath: 'byok-gateway',
       providerLabel: 'OpenAI',
       modelLabel: 'GPT-4.1 Mini',
       usage: undefined,
@@ -557,7 +556,7 @@ describe('headless foundation', () => {
     });
   });
 
-  it('returns a structured error when BYOK execution is not configured', async () => {
+  it('returns a structured error when BYOK execution has no gateway configured', async () => {
     const manager = createAIConfigManager({
       appDefinition,
       storage: createMemoryStorage(),
@@ -573,8 +572,8 @@ describe('headless foundation', () => {
     expect(result).toEqual({
       ok: false,
       category: 'configuration',
-      code: 'byok-not-configured',
-      message: 'Direct provider execution is not configured for "openai".',
+      code: 'hosted-not-configured',
+      message: 'Hosted gateway execution is not configured.',
       retryable: false,
     });
   });
@@ -583,8 +582,12 @@ describe('headless foundation', () => {
     const manager = createAIConfigManager({
       appDefinition,
       storage: createMemoryStorage(),
-      directProviders: {
-        getClient: vi.fn(),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway: {
+          authenticate: vi.fn(),
+          invoke: vi.fn(),
+        },
       },
     });
 
@@ -704,15 +707,15 @@ describe('headless foundation', () => {
     });
   });
 
-  it('returns a structured direct invoke error when provider execution fails', async () => {
+  it('returns a structured hosted invoke error when BYOK gateway execution fails', async () => {
     const manager = createAIConfigManager({
       appDefinition,
       storage: createMemoryStorage(),
-      directProviders: {
-        getClient() {
-          return {
-            invoke: vi.fn().mockRejectedValue(new Error('provider unavailable')),
-          };
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway: {
+          authenticate: vi.fn().mockResolvedValue({ token: 'hosted-token' }),
+          invoke: vi.fn().mockRejectedValue(new Error('provider unavailable')),
         },
       },
     });
@@ -726,10 +729,11 @@ describe('headless foundation', () => {
 
     expect(result).toEqual({
       ok: false,
-      category: 'provider',
-      code: 'direct-invoke-failed',
+      category: 'network',
+      code: 'hosted-invoke-failed',
       message: 'provider unavailable',
       retryable: true,
+      upstream: undefined,
     });
   });
 
@@ -799,15 +803,11 @@ describe('headless foundation', () => {
     expect(gateway.authenticate).toHaveBeenCalledTimes(2);
     expect(gateway.invoke).toHaveBeenNthCalledWith(1, {
       token: 'expired-token',
-      provider: undefined,
-      model: undefined,
       input: 'Hello hosted world',
       stream: undefined,
     });
     expect(gateway.invoke).toHaveBeenNthCalledWith(2, {
       token: 'fresh-token',
-      provider: undefined,
-      model: undefined,
       input: 'Hello hosted world',
       stream: undefined,
     });
@@ -907,8 +907,6 @@ describe('headless foundation', () => {
 
     expect(gateway.invoke).toHaveBeenCalledWith({
       token: 'hosted-token',
-      provider: undefined,
-      model: undefined,
       input: 'Hello hosted world',
       stream: undefined,
     });

@@ -32,6 +32,10 @@ import {
 } from './actions';
 import { mergeAIConfigWithAppDefinition } from './merge';
 
+function toGatewayProvider(provider: AIProviderId): string {
+  return provider === 'gemini' ? 'gemini' : provider;
+}
+
 function getMissingCredentialMessage(provider: AIProviderId): string {
   return `Missing credential for provider \"${provider}\".`;
 }
@@ -109,6 +113,27 @@ function normalizeHostedInvokeError(error: unknown): Pick<AIInvokeError, 'catego
     retryable: upstream?.retryable ?? true,
     upstream,
   };
+}
+
+async function authenticateHostedGateway(options: AIConfigManagerOptions): Promise<AIHostedAuthResult> {
+  return options.hostedGateway!.gateway.authenticate({
+    appId: options.appDefinition.appId,
+    clientId: options.hostedGateway!.clientId,
+  });
+}
+
+async function invokeHostedGateway(
+  options: AIConfigManagerOptions,
+  invokeRequest: {
+    token: string;
+    provider?: string;
+    model?: string;
+    credential?: string;
+    input: string;
+    stream?: boolean;
+  },
+): Promise<AIHostedInvokeSuccess> {
+  return options.hostedGateway!.gateway.invoke(invokeRequest);
 }
 
 function shouldOmitHostedModel(
@@ -351,111 +376,7 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         };
       }
 
-      if (resolved.mode === 'default') {
-        if (!options.hostedGateway) {
-          return {
-            ok: false,
-            category: 'configuration',
-            code: 'hosted-not-configured',
-            message: 'Hosted gateway execution is not configured.',
-            retryable: false,
-          };
-        }
-
-        let auth: AIHostedAuthResult;
-
-        try {
-          auth = await options.hostedGateway.gateway.authenticate({
-            appId: options.appDefinition.appId,
-            clientId: options.hostedGateway.clientId,
-          });
-        } catch (error) {
-          return {
-            ok: false,
-            category: 'authentication',
-            code: 'hosted-auth-failed',
-            message: toErrorMessage(error, 'Hosted authentication failed.'),
-            retryable: true,
-            upstream: getHostedErrorDetails(error),
-          };
-        }
-
-        const invokeRequest = {
-          token: auth.token,
-          provider: selectedProvider === 'hosted' ? undefined : selectedProvider,
-          model: shouldOmitHostedModel(selectedProvider, selectedModel, options)
-            ? undefined
-            : (selectedModel ?? undefined),
-          input: request.input,
-          stream: request.stream,
-        };
-
-        let response: AIHostedInvokeSuccess;
-
-        try {
-          response = await options.hostedGateway.gateway.invoke(invokeRequest);
-        } catch (error) {
-          if (!options.hostedGateway.shouldRefreshToken?.(error)) {
-            return {
-              ok: false,
-              ...normalizeHostedInvokeError(error),
-            };
-          }
-
-          let refreshedAuth: AIHostedAuthResult;
-
-          try {
-            refreshedAuth = await options.hostedGateway.gateway.authenticate({
-              appId: options.appDefinition.appId,
-              clientId: options.hostedGateway.clientId,
-            });
-          } catch (refreshError) {
-            return {
-              ok: false,
-              category: 'authentication',
-              code: 'token-expired',
-              message: toErrorMessage(refreshError, 'Hosted token refresh failed.'),
-              retryable: true,
-              upstream: getHostedErrorDetails(refreshError),
-            };
-          }
-
-          try {
-            response = await options.hostedGateway.gateway.invoke({
-              ...invokeRequest,
-              token: refreshedAuth.token,
-            });
-          } catch (retryError) {
-            const normalizedRetryError = normalizeHostedInvokeError(retryError);
-
-            return {
-              ok: false,
-              ...normalizedRetryError,
-              message:
-                normalizedRetryError.upstream?.message ??
-                toErrorMessage(retryError, 'Hosted invocation failed after token refresh.'),
-            };
-          }
-        }
-
-        return {
-          ok: true,
-          provider: response.provider,
-          model: response.model,
-          output: response.output,
-          executionPath: 'hosted',
-          providerLabel: getProviderById(response.provider as AIProviderId, options.appDefinition)
-            ?.label,
-          modelLabel: getModelById(
-            response.provider as AIProviderId,
-            response.model,
-            options.appDefinition,
-          )?.label,
-          usage: response.usage,
-        };
-      }
-
-      if (resolved.mode !== 'byok') {
+      if (resolved.mode !== 'default' && resolved.mode !== 'byok') {
         return {
           ok: false,
           category: 'configuration',
@@ -465,7 +386,17 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         };
       }
 
-      if (!selectedModel) {
+      if (!options.hostedGateway) {
+        return {
+          ok: false,
+          category: 'configuration',
+          code: 'hosted-not-configured',
+          message: 'Hosted gateway execution is not configured.',
+          retryable: false,
+        };
+      }
+
+      if (resolved.mode === 'byok' && !selectedModel) {
         return {
           ok: false,
           category: 'configuration',
@@ -476,7 +407,7 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       }
 
       const credential = state.credentials[selectedProvider];
-      if (!credential?.apiKey) {
+      if (resolved.mode === 'byok' && !credential?.apiKey) {
         return {
           ok: false,
           category: 'configuration',
@@ -486,35 +417,81 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         };
       }
 
-      const client = options.directProviders?.getClient(selectedProvider);
-      if (!client) {
+      let auth: AIHostedAuthResult;
+
+      try {
+        auth = await authenticateHostedGateway(options);
+      } catch (error) {
         return {
           ok: false,
-          category: 'configuration',
-          code: 'byok-not-configured',
-          message: `Direct provider execution is not configured for "${selectedProvider}".`,
-          retryable: false,
+          category: 'authentication',
+          code: 'hosted-auth-failed',
+          message: toErrorMessage(error, 'Hosted authentication failed.'),
+          retryable: true,
+          upstream: getHostedErrorDetails(error),
         };
       }
+
+      const isHostedDefaultRequest = resolved.mode === 'default' && selectedProvider === 'hosted';
+
+      const invokeRequest = isHostedDefaultRequest
+        ? {
+            token: auth.token,
+            input: request.input,
+            stream: request.stream,
+          }
+        : {
+            token: auth.token,
+            provider: toGatewayProvider(selectedProvider),
+            model: selectedModel ?? undefined,
+            credential: resolved.mode === 'byok' ? credential?.apiKey : undefined,
+            input: request.input,
+            stream: request.stream,
+          };
 
       let response: AIHostedInvokeSuccess;
 
       try {
-        response = await client.invoke({
-          provider: selectedProvider,
-          model: selectedModel,
-          credential: credential.apiKey,
-          input: request.input,
-          stream: request.stream,
-        });
+        response = await invokeHostedGateway(options, invokeRequest);
       } catch (error) {
-        return {
-          ok: false,
-          category: 'provider',
-          code: 'direct-invoke-failed',
-          message: toErrorMessage(error, 'Direct provider invocation failed.'),
-          retryable: true,
-        };
+        if (!options.hostedGateway.shouldRefreshToken?.(error)) {
+          return {
+            ok: false,
+            ...normalizeHostedInvokeError(error),
+          };
+        }
+
+        let refreshedAuth: AIHostedAuthResult;
+
+        try {
+          refreshedAuth = await authenticateHostedGateway(options);
+        } catch (refreshError) {
+          return {
+            ok: false,
+            category: 'authentication',
+            code: 'token-expired',
+            message: toErrorMessage(refreshError, 'Hosted token refresh failed.'),
+            retryable: true,
+            upstream: getHostedErrorDetails(refreshError),
+          };
+        }
+
+        try {
+          response = await invokeHostedGateway(options, {
+            ...invokeRequest,
+            token: refreshedAuth.token,
+          });
+        } catch (retryError) {
+          const normalizedRetryError = normalizeHostedInvokeError(retryError);
+
+          return {
+            ok: false,
+            ...normalizedRetryError,
+            message:
+              normalizedRetryError.upstream?.message ??
+              toErrorMessage(retryError, 'Hosted invocation failed after token refresh.'),
+          };
+        }
       }
 
       return {
@@ -522,9 +499,16 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         provider: response.provider,
         model: response.model,
         output: response.output,
-        executionPath: 'byok-direct',
-        providerLabel: getProviderById(selectedProvider, options.appDefinition)?.label,
-        modelLabel: getModelById(selectedProvider, response.model, options.appDefinition)?.label,
+        executionPath: resolved.mode === 'byok' ? 'byok-gateway' : 'hosted',
+        providerLabel: getProviderById(
+          (resolved.mode === 'byok' ? selectedProvider : (response.provider as AIProviderId)),
+          options.appDefinition,
+        )?.label,
+        modelLabel: getModelById(
+          (resolved.mode === 'byok' ? selectedProvider : (response.provider as AIProviderId)),
+          response.model,
+          options.appDefinition,
+        )?.label,
         usage: response.usage,
       };
     },

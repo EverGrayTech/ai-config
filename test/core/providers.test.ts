@@ -82,7 +82,7 @@ describe('provider registry and validation', () => {
   });
 
   it('returns undefined for unavailable provider ids', () => {
-    expect(getProviderById('google', appDefinition)).toBeUndefined();
+    expect(getProviderById('gemini', appDefinition)).toBeUndefined();
   });
 
   it('filters available models using app definition', () => {
@@ -104,7 +104,7 @@ describe('provider registry and validation', () => {
   });
 
   it('returns no models for unavailable providers', () => {
-    expect(getAvailableModels('google', appDefinition)).toEqual([]);
+    expect(getAvailableModels('gemini', appDefinition)).toEqual([]);
   });
 
   it('returns default usage presentation for app-provided mode', () => {
