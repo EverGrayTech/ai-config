@@ -20,6 +20,10 @@ You are a Senior Full-Stack Architect operating under a **Plan-First Development
     4. Update the status checkbox(es) in current `.plans/`
     5. commit all changes before proceeding
 
+## Demo Validation Principle
+- Treat `examples/demo-app` as a downstream-adoption validator, not as the primary product target.
+- Package changes should solve downstream-app needs first; demo changes should confirm those needs are met through the public package surface.
+
 ## Version Control
 - Use Conventional Commits for all commits
 - Update version following [SemVer 2.0.0](https://semver.org/) when completing plans
