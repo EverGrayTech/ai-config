@@ -14,6 +14,7 @@ import type {
   AIHostedGatewayError,
   AIHostedInvokeSuccess,
   AIInvokeError,
+  AIInvokeRequest,
   AIProviderId,
 } from '../types/public';
 import {
@@ -249,6 +250,19 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
     return state;
   };
 
+  const flushPendingState = (candidateState?: AIConfigState): void => {
+    if (!candidateState) {
+      return;
+    }
+
+    if (candidateState === state) {
+      return;
+    }
+
+    state = candidateState;
+    emit();
+  };
+
   const manager: AIConfigManager & { options?: AIConfigManagerOptions } = {
     getState() {
       return state;
@@ -317,6 +331,8 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       assign(resetAIConfigState(options.appDefinition));
     },
     async invoke(request) {
+      flushPendingState((request as AIInvokeRequest & { __resolvedState?: AIConfigState }).__resolvedState);
+
       const resolved = resolveInvokeRoute(state, options, request.category);
       if ('error' in resolved) {
         return resolved.error;

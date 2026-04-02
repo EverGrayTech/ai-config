@@ -71,17 +71,17 @@ The demo app currently splits the simple composed view and the richer validation
 
 ### Phase 5: Validation and documentation
 
-- [ ] Verify demo behavior for both default-only and categorized examples after the UX changes.
-- [ ] Run repository quality checks relevant to the affected package/demo surface.
-- [ ] Update maintainer/consumer docs only where the public default UX expectations changed.
+- [x] Verify demo behavior for both default-only and categorized examples after the UX changes.
+- [x] Run repository quality checks relevant to the affected package/demo surface.
+- [x] Update maintainer/consumer docs only where the public default UX expectations changed.
 
 ## Acceptance criteria
 
 This plan is complete when:
 
-- [ ] the default panel presents a simpler first-run experience for non-technical users
-- [ ] app-provided mode hides provider/model controls entirely
-- [ ] non-categorized apps no longer show confusing “Default” terminology for top-level controls
-- [ ] generation settings are available but collapsed by default in the baseline experience
-- [ ] the noisy app-provided usage block is removed or materially reduced
-- [ ] the demo app’s primary overview surface shows both the simple and categorized validation harnesses
+- [x] the default panel presents a simpler first-run experience for non-technical users
+- [x] app-provided mode hides provider/model controls entirely
+- [x] non-categorized apps no longer show confusing “Default” terminology for top-level controls
+- [x] generation settings are available but collapsed by default in the baseline experience
+- [x] the noisy app-provided usage block is removed or materially reduced
+- [x] the demo app’s primary overview surface shows both the simple and categorized validation harnesses

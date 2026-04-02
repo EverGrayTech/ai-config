@@ -21,7 +21,7 @@ const appDefinition: AIConfigAppDefinition = {
   },
   byok: {
     enabled: true,
-    providers: ['openai', 'anthropic', 'openrouter'],
+    providers: ['anthropic', 'google', 'openai', 'openrouter'],
   },
   defaultGeneration: {
     temperature: 0.4,

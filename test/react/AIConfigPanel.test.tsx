@@ -9,6 +9,7 @@ import { type AIConfigAppDefinition, createAIConfigManager } from '../../src';
 import {
   AIConfigPanel,
   AIConfigProvider,
+  AIConfigStatus,
   AICredentialStatus,
   AIGenerationSettingsForm,
   AIUsageHint,
@@ -35,7 +36,7 @@ const appDefinition: AIConfigAppDefinition = {
   },
   byok: {
     enabled: true,
-    providers: ['openai', 'anthropic'],
+    providers: ['anthropic', 'google', 'openai'],
   },
   defaultGeneration: {
     temperature: 0.4,
@@ -80,8 +81,8 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    expect(screen.getByText('AI mode')).toBeInTheDocument();
-    expect(screen.getByLabelText('AI mode')).toBeInTheDocument();
+    expect(screen.getByText('AI Provider')).toBeInTheDocument();
+    expect(screen.getByLabelText('AI Provider')).toBeInTheDocument();
     expect(screen.queryByLabelText('AI provider')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('AI model')).not.toBeInTheDocument();
     expect(screen.getByText('Generation settings')).toBeInTheDocument();
@@ -115,8 +116,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
-    await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
     await user.selectOptions(screen.getByLabelText('AI model'), 'gpt-4.1-mini');
 
     const temperatureInput = screen.getByLabelText('Temperature');
@@ -141,16 +141,15 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
-    await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
     await user.type(screen.getByLabelText('API key'), 'sk-test-1234567890');
-    await user.click(screen.getByText('Save key'));
 
-    expect(screen.getByText(/Saved key:/)).toBeInTheDocument();
-    expect(screen.getByText(/Stored locally in your browser/)).toBeInTheDocument();
+    expect(screen.getByText('Add an API key before invoking this provider.')).toBeInTheDocument();
+
+    expect(screen.getByLabelText('AI Provider')).toHaveValue('openai');
 
     await user.click(screen.getByText('Clear key'));
-    expect(screen.getByText('No saved API key for this provider.')).toBeInTheDocument();
+    expect(screen.getByLabelText('API key')).toHaveValue('');
   });
 
   it('resets settings through the reset button', async () => {
@@ -163,8 +162,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
-    await user.selectOptions(screen.getByLabelText('AI provider'), 'anthropic');
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'anthropic');
     await user.click(screen.getByText('Reset AI settings'));
 
     expect(screen.getByTestId('state-probe').textContent).toContain('"mode":"default"');
@@ -194,13 +192,12 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    expect(screen.getByTestId('hook-provider-count')).toHaveTextContent('2');
+    expect(screen.getByTestId('hook-provider-count')).toHaveTextContent('3');
     expect(screen.getByTestId('hook-model-count')).toHaveTextContent('0');
     expect(screen.getByTestId('hook-app-id')).toHaveTextContent('react-test-app');
 
     await user.click(screen.getByText('Hook set mode'));
-    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
-    await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
 
     expect(screen.getByTestId('hook-model-count')).toHaveTextContent('2');
     expect(screen.getByTestId('hook-manager-mode')).toHaveTextContent('byok');
@@ -222,8 +219,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
-    await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
 
     expect(events).toContain('byok:hosted');
     expect(events).toContain('byok:openai');
@@ -234,22 +230,107 @@ describe('AIConfigPanel', () => {
 
     render(
       <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
-        <AICredentialStatus />
         <AIUsageHint />
         <AIGenerationSettingsForm />
       </AIConfigProvider>,
     );
 
-    expect(screen.getByText('No saved API key for this provider.')).toBeInTheDocument();
     expect(screen.getByText('App-provided AI')).toBeInTheDocument();
 
     const reasoningSelect = screen.getByLabelText('Reasoning preset');
     await user.selectOptions(reasoningSelect, 'high');
     expect((reasoningSelect as HTMLSelectElement).value).toBe('high');
-    expect(screen.getByText('No saved API key for this provider.')).toHaveAttribute(
+
+    const byokUsageManager = createAIConfigManager({ appDefinition });
+    byokUsageManager.setMode('byok');
+    byokUsageManager.setProvider('openai');
+
+    const usageView = render(
+      <AIConfigProvider appDefinition={appDefinition} manager={byokUsageManager} loadOnMount={false}>
+        <AIUsageHint />
+      </AIConfigProvider>,
+    );
+
+    expect(usageView.getByText('Bring your own key')).toBeInTheDocument();
+    usageView.unmount();
+
+    const statusView = render(
+      <AIConfigProvider appDefinition={appDefinition} manager={byokUsageManager} loadOnMount={false}>
+        <AIConfigStatus />
+      </AIConfigProvider>,
+    );
+
+    expect(statusView.getByText('Add an API key before invoking this provider.')).toBeInTheDocument();
+    statusView.unmount();
+  });
+
+  it('renders credential status for empty, missing, and saved states', async () => {
+    const user = userEvent.setup();
+
+    const savedKeyManager = createAIConfigManager({ appDefinition });
+    savedKeyManager.setMode('byok');
+    savedKeyManager.setProvider('openai');
+    savedKeyManager.setCredential('openai', { apiKey: 'sk-test-1234567890' });
+
+    const missingKeyManager = createAIConfigManager({ appDefinition });
+    missingKeyManager.setMode('byok');
+    missingKeyManager.setProvider('openai');
+
+    const emptyStatus = render(
+      <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+        <AICredentialStatus />
+      </AIConfigProvider>,
+    );
+
+    expect(emptyStatus.getByText('No saved API key for this provider.')).toHaveAttribute(
       'data-eg-ai-config-status',
       'missing',
     );
+    emptyStatus.unmount();
+
+    const missingStatus = render(
+      <AIConfigProvider
+        appDefinition={appDefinition}
+        manager={missingKeyManager}
+        loadOnMount={false}
+      >
+        <AICredentialStatus />
+      </AIConfigProvider>,
+    );
+
+    expect(missingStatus.getByText('No saved API key for this provider.')).toHaveAttribute(
+      'data-eg-ai-config-status',
+      'missing',
+    );
+    missingStatus.unmount();
+
+    const savedStatus = render(
+      <AIConfigProvider
+        appDefinition={appDefinition}
+        manager={savedKeyManager}
+        loadOnMount={false}
+      >
+        <AICredentialStatus />
+      </AIConfigProvider>,
+    );
+
+    expect(savedStatus.getByText(/Saved key:/)).toHaveAttribute('data-eg-ai-config-status', 'saved');
+    expect(savedStatus.getByText('sk-t••••7890')).toBeInTheDocument();
+    savedStatus.unmount();
+
+    render(
+      <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+        <AIConfigPanel />
+      </AIConfigProvider>,
+    );
+
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
+    await user.type(screen.getByLabelText('API key'), 'sk-fresh-123456');
+    await user.tab();
+
+    expect(
+      screen.getByRole('option', { name: /OpenAI — configured/ }),
+    ).toBeInTheDocument();
   });
 
   it('exposes stable styling hooks for key sections and actions', async () => {
@@ -266,15 +347,13 @@ describe('AIConfigPanel', () => {
       'reset',
     );
 
-    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
-    expect(
-      screen.getByLabelText('AI provider').closest('[data-eg-ai-config-field="provider"]'),
-    ).not.toBeNull();
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
+    expect(screen.queryByLabelText('AI provider')).not.toBeInTheDocument();
     expect(
       screen.getByLabelText('AI model').closest('[data-eg-ai-config-field="model"]'),
     ).not.toBeNull();
     expect(
-      screen.getByText('Save key').closest('[data-eg-ai-config-actions="api-key"]'),
+      screen.getByText('Clear key').closest('[data-eg-ai-config-actions="api-key"]'),
     ).not.toBeNull();
   });
 
@@ -307,7 +386,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
     expect(screen.getByText('Evaluate')).toBeInTheDocument();
     expect(screen.getByText('Write')).toBeInTheDocument();
     expect(screen.getAllByText('Uses Default route settings.')).toHaveLength(2);
@@ -339,7 +418,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
     await user.click(screen.getByText('Evaluate'));
     await user.click(screen.getByLabelText('Enable category override'));
     await user.selectOptions(screen.getByLabelText('Evaluate provider'), 'openai');

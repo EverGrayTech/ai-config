@@ -7,8 +7,8 @@ import type {
   AIConfigState,
   AIHostedAuthRequest,
   AIHostedAuthResult,
-  AIHostedGatewayError,
   AIHostedGatewayClient,
+  AIHostedGatewayError,
   AIHostedInvokeRequest,
   AIHostedInvokeSuccess,
   AIInvokeRequest,
@@ -42,6 +42,40 @@ type ValidationHarnessProps = {
   categoryOptions: string[];
   gatewayConfig: DemoGatewayConfig;
 };
+
+function resolveDisplayedInvokeSnapshot(
+  state: AIConfigState,
+  category?: string | null,
+) {
+  const defaultRoute = state.routes?.default ?? {
+    provider: state.selectedProvider,
+    model: state.selectedModel,
+    generation: state.generation,
+  };
+
+  if (!category) {
+    return {
+      category: null,
+      mode: state.mode,
+      route: defaultRoute,
+    };
+  }
+
+  const categoryRoute = state.routes?.categories?.[category];
+  if (!categoryRoute || !categoryRoute.enabled) {
+    return {
+      category,
+      mode: state.mode,
+      route: defaultRoute,
+    };
+  }
+
+  return {
+    category,
+    mode: categoryRoute.provider === 'hosted' ? 'default' : 'byok',
+    route: categoryRoute,
+  };
+}
 
 function getEnvValue(key: string): string | undefined {
   const env = import.meta.env as Record<string, string | undefined>;
@@ -152,9 +186,18 @@ function ValidationHarness({
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [invokeResult, setInvokeResult] = useState<AIInvokeResult | null>(null);
+  const [invokeMeta, setInvokeMeta] = useState<{
+    requestedAt: string;
+    category: string | null;
+    prompt: string;
+    state: unknown;
+    resolvedInvoke: unknown;
+  } | null>(null);
   const [isInvoking, setIsInvoking] = useState(false);
   const [stateSnapshot, setStateSnapshot] = useState<unknown>(null);
+  const latestStateRef = useRef<AIConfigState | null>(null);
   const gatewayClientId = gatewayConfig.clientId;
+  const gatewayRef = useRef<AIHostedGatewayClient | null>(null);
 
   const appendLog = React.useCallback(
     (scope: LogEntry['scope'], event: string, payload: unknown) => {
@@ -172,27 +215,35 @@ function ValidationHarness({
     [],
   );
 
+  if (!gatewayRef.current) {
+    gatewayRef.current = createGatewayClient(gatewayConfig, appendLog);
+  }
+
   const manager = useMemo(() => {
     const nextManager = createAIConfigManager({
       appDefinition,
       hostedGateway: {
         clientId: gatewayClientId,
-        gateway: createGatewayClient(gatewayConfig, appendLog),
+        gateway: gatewayRef.current,
       },
     });
 
     managerRef.current = nextManager;
-    setStateSnapshot(sanitizeAIConfigForDebug(nextManager.getState()));
+    const initialState = nextManager.getState();
+    latestStateRef.current = initialState;
+    setStateSnapshot(sanitizeAIConfigForDebug(initialState));
     return nextManager;
-  }, [appDefinition, appendLog, gatewayClientId, gatewayConfig]);
+  }, [appDefinition, gatewayClientId]);
 
   useEffect(() => {
     const unsubscribe = manager.subscribe((nextState: AIConfigState) => {
+      latestStateRef.current = nextState;
       const sanitized = sanitizeAIConfigForDebug(nextState);
       setStateSnapshot(sanitized);
       appendLog('config', 'state:changed', sanitized);
     });
 
+    latestStateRef.current = manager.getState();
     appendLog('config', 'state:initial', sanitizeAIConfigForDebug(manager.getState()));
 
     return unsubscribe;
@@ -209,17 +260,32 @@ function ValidationHarness({
       category,
     };
 
+    const sourceState = latestStateRef.current ?? effectiveManager.getState();
+    const snapshot = sanitizeAIConfigForDebug(sourceState) as AIConfigState;
+
     appendLog('invoke', 'invoke:request', {
       category: category ?? null,
       request,
-      state: sanitizeAIConfigForDebug(effectiveManager.getState()),
+      state: snapshot,
+      resolvedInvoke: resolveDisplayedInvokeSnapshot(snapshot, category ?? null),
+    });
+
+    setInvokeMeta({
+      requestedAt: new Date().toISOString(),
+      category: category ?? null,
+      prompt: request.input,
+      state: snapshot,
+      resolvedInvoke: resolveDisplayedInvokeSnapshot(snapshot, category ?? null),
     });
 
     setIsInvoking(true);
     setInvokeResult(null);
 
     try {
-      const result = await effectiveManager.invoke(request);
+      const result = await effectiveManager.invoke({
+        ...request,
+        __resolvedState: sourceState,
+      } as AIInvokeRequest & { __resolvedState: AIConfigState });
       setInvokeResult(result);
       appendLog('result', 'invoke:result', result);
     } catch (error) {
@@ -237,85 +303,159 @@ function ValidationHarness({
   return (
     <DemoCard title={title} description={description}>
       <div className="demo-stack">
-        <AIConfigProvider appDefinition={appDefinition} manager={manager} loadOnMount={false}>
-          <AIConfigPanel />
-        </AIConfigProvider>
+        <section className="demo-section-group" aria-label="AI configuration">
+          <div className="demo-section-heading">
+            <h4>AI Configuration</h4>
+            <p>Adjust provider, model, credentials, and generation settings.</p>
+          </div>
+          <AIConfigProvider appDefinition={appDefinition} manager={manager} loadOnMount={false}>
+            <AIConfigPanel />
+          </AIConfigProvider>
+        </section>
 
-        <div className="demo-invoke-controls">
-          <label className="demo-field">
-            Prompt
-            <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} rows={3} />
-          </label>
-
-          {categoryOptions.length > 0 ? (
+        <section className="demo-section-group" aria-label="Invocation controls">
+          <div className="demo-section-heading">
+            <h4>Invocation</h4>
+            <p>Choose the prompt and route to exercise the currently resolved configuration.</p>
+          </div>
+          <div className="demo-invoke-controls">
             <label className="demo-field">
-              Category
-              <select
-                value={activeCategory}
-                onChange={(event) => setActiveCategory(event.target.value)}
-              >
-                <option value="">Default route (no category)</option>
-                {categoryOptions.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
+              Prompt
+              <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} rows={3} />
             </label>
-          ) : null}
 
-          <div className="demo-button-row">
-            <button type="button" onClick={() => invoke()} disabled={isInvoking}>
-              Invoke default route
-            </button>
-            {categoryOptions.map((category) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => invoke(category)}
-                disabled={isInvoking}
-              >
-                Invoke {category}
-              </button>
-            ))}
             {categoryOptions.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => invoke(activeCategory || undefined)}
-                disabled={isInvoking}
-              >
-                Invoke selected option
-              </button>
+              <label className="demo-field">
+                Category
+                <select
+                  value={activeCategory}
+                  onChange={(event) => setActiveCategory(event.target.value)}
+                >
+                  <option value="">Default route (no category)</option>
+                  {categoryOptions.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
             ) : null}
+
+            <div className="demo-button-row">
+              <button type="button" onClick={() => invoke()} disabled={isInvoking}>
+                {categoryOptions.length > 0 ? 'Invoke default route' : 'Invoke'}
+              </button>
+              {categoryOptions.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => invoke(category)}
+                  disabled={isInvoking}
+                >
+                  Invoke {category}
+                </button>
+              ))}
+              {categoryOptions.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => invoke(activeCategory || undefined)}
+                  disabled={isInvoking}
+                >
+                  Invoke selected option
+                </button>
+              ) : null}
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div className="demo-grid demo-grid--logs">
-          <section className="demo-log-panel">
-            <h4>Resolved ai-config state</h4>
-            <pre>{JSON.stringify(stateSnapshot, null, 2)}</pre>
-          </section>
+        <section className="demo-section-group" aria-label="Invocation results">
+          <div className="demo-section-heading">
+            <h4>Request and Results</h4>
+            <p>
+              Review the latest invocation request and the returned results.
+            </p>
+          </div>
+          <div className="demo-grid demo-grid--logs">
+            <section className="demo-log-panel">
+              <h4>Latest invocation request</h4>
+              <pre>
+                {JSON.stringify(
+                  invokeMeta
+                    ? {
+                        requestedAt: invokeMeta.requestedAt,
+                        category: invokeMeta.category,
+                        request: {
+                          input: invokeMeta.prompt,
+                          category: invokeMeta.category ?? undefined,
+                        },
+                        resolvedInvoke: invokeMeta.resolvedInvoke,
+                      }
+                    : null,
+                  null,
+                  2,
+                )}
+              </pre>
+              <p className="demo-result-alert-hint">
+                Snapshot captured when Invoke was pressed. If this does not match the panel, the
+                panel change likely has not propagated yet.
+              </p>
+            </section>
 
-          <section className="demo-log-panel">
-            <h4>Latest invocation result</h4>
-            <pre>{JSON.stringify(invokeResult, null, 2)}</pre>
-          </section>
-        </div>
-
-        <section className="demo-log-panel">
-          <h4>Gateway + invocation log</h4>
-          <div className="demo-log-list">
-            {logs.map((entry) => (
-              <article key={entry.id} className="demo-log-entry">
-                <div className="demo-log-meta">
-                  <strong>{entry.scope}</strong>
-                  <span>{entry.event}</span>
-                  <time>{entry.timestamp}</time>
+            <section
+              className="demo-log-panel"
+              data-demo-result-status={invokeResult == null ? 'idle' : invokeResult.ok ? 'success' : 'error'}
+            >
+              <h4>Latest invocation result</h4>
+              {invokeMeta ? (
+                <div className="demo-result-summary">
+                  <strong>
+                    {invokeResult == null
+                      ? 'Invoking…'
+                      : invokeResult.ok
+                        ? 'Success'
+                        : 'Configuration or invocation error'}
+                  </strong>
+                  <span>
+                    {invokeMeta.category ? `Category: ${invokeMeta.category}` : 'Default route'}
+                  </span>
+                  <span>{invokeMeta.requestedAt}</span>
                 </div>
-                <pre>{JSON.stringify(entry.payload, null, 2)}</pre>
-              </article>
-            ))}
+              ) : (
+                <p className="demo-result-empty">No invocation attempted yet.</p>
+              )}
+              {!invokeResult?.ok && invokeResult ? (
+                <div className="demo-result-alert" role="alert">
+                  <strong>{invokeResult.code}</strong>
+                  <p>{invokeResult.message}</p>
+                  <p className="demo-result-alert-hint">
+                    Check the selected provider, model, and API key before invoking again.
+                  </p>
+                </div>
+              ) : null}
+              <pre>{JSON.stringify(invokeResult, null, 2)}</pre>
+            </section>
           </div>
+        </section>
+
+        <section className="demo-section-group" aria-label="Gateway and invocation log">
+          <div className="demo-section-heading">
+            <h4>Gateway + invocation log</h4>
+            <p>Use the event log for request/response debugging and route verification.</p>
+          </div>
+          <section className="demo-log-panel">
+            <div className="demo-log-list">
+              {logs.map((entry) => (
+                <article key={entry.id} className="demo-log-entry">
+                  <div className="demo-log-meta">
+                    <strong>{entry.scope}</strong>
+                    <span>{entry.event}</span>
+                    <time>{entry.timestamp}</time>
+                  </div>
+                  <pre>{JSON.stringify(entry.payload, null, 2)}</pre>
+                </article>
+              ))}
+            </div>
+          </section>
         </section>
       </div>
     </DemoCard>
@@ -342,7 +482,7 @@ export function RouteValidationScreen() {
       },
       byok: {
         enabled: true,
-        providers: ['openai', 'anthropic', 'openrouter'],
+        providers: ['anthropic', 'google', 'openai', 'openrouter'],
       },
       defaultGeneration: {
         temperature: 0.4,
@@ -363,7 +503,7 @@ export function RouteValidationScreen() {
       },
       byok: {
         enabled: true,
-        providers: ['openai', 'anthropic', 'openrouter'],
+        providers: ['anthropic', 'google', 'openai', 'openrouter'],
       },
       defaultGeneration: {
         temperature: 0.4,
@@ -407,15 +547,15 @@ export function RouteValidationScreen() {
 
       <div className="demo-grid">
         <ValidationHarness
-          title="Default-only route validation"
-          description="Shows the simpler app posture with only the Default route active."
+          title="Single Category Validation"
+          description="Simpler app posture with only one Provider/Model for all invocations."
           appDefinition={defaultOnlyDefinition}
           categoryOptions={[]}
           gatewayConfig={gatewayConfig}
         />
         <ValidationHarness
-          title="Categorized route validation"
-          description="Shows category inheritance vs explicit overrides for evaluate and write flows."
+          title="Categorized Operations Validation"
+          description="Supports multiple categories allowing Provider/Model to be overridden for specific sets of operations."
           appDefinition={categorizedDefinition}
           categoryOptions={['evaluate', 'write']}
           gatewayConfig={gatewayConfig}

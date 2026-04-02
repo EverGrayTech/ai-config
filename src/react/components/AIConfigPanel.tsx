@@ -9,12 +9,11 @@ import {
 } from '../context/AIConfigContext';
 import { AIApiKeyField } from './AIApiKeyField';
 import { AIConfigResetButton } from './AIConfigResetButton';
-import { AICredentialStatus } from './AICredentialStatus';
+import { AIConfigStatus } from './AIConfigStatus';
 import { AIGenerationSettingsForm } from './AIGenerationSettingsForm';
 import { AIModeSelector } from './AIModeSelector';
 import { AIModelSelector } from './AIModelSelector';
 import { AIProviderSelector } from './AIProviderSelector';
-import { AIUsageHint } from './AIUsageHint';
 
 export interface AIConfigPanelProps {
   framed?: boolean;
@@ -80,7 +79,6 @@ export function AIConfigPanel({ framed = false }: AIConfigPanelProps) {
   const categories = appDefinition.operationCategories ?? [];
   const hasCategories = categories.length > 0;
   const isByokMode = state.mode === 'byok';
-  const providerLabel = hasCategories ? 'Default provider' : 'Provider';
   const modelLabel = hasCategories ? 'Default model' : 'Model';
 
   return (
@@ -93,10 +91,9 @@ export function AIConfigPanel({ framed = false }: AIConfigPanelProps) {
       <AIModeSelector />
       {isByokMode ? (
         <>
-          <AIProviderSelector label={providerLabel} ariaLabel="AI provider" />
-          <AIModelSelector label={modelLabel} ariaLabel="AI model" />
           <AIApiKeyField />
-          <AICredentialStatus />
+          <AIModelSelector label={modelLabel} ariaLabel="AI model" />
+          <AIConfigStatus />
         </>
       ) : null}
       <AIGenerationSettingsForm collapsible defaultOpen={false} />
@@ -108,7 +105,6 @@ export function AIConfigPanel({ framed = false }: AIConfigPanelProps) {
           description={category.description}
         />
       ))}
-      {isByokMode ? <AIUsageHint /> : null}
       <AIConfigResetButton />
     </section>
   );

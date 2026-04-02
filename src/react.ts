@@ -15,6 +15,7 @@ export { AIProviderSelector } from './react/components/AIProviderSelector';
 export type { AIModelSelectorProps } from './react/components/AIModelSelector';
 export { AIModelSelector } from './react/components/AIModelSelector';
 export { AIApiKeyField } from './react/components/AIApiKeyField';
+export { AIConfigStatus } from './react/components/AIConfigStatus';
 export type { AIGenerationSettingsFormProps } from './react/components/AIGenerationSettingsForm';
 export { AIGenerationSettingsForm } from './react/components/AIGenerationSettingsForm';
 export { AIUsageHint } from './react/components/AIUsageHint';
