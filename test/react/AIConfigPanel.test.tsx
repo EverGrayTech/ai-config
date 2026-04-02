@@ -81,8 +81,9 @@ describe('AIConfigPanel', () => {
     );
 
     expect(screen.getByText('AI mode')).toBeInTheDocument();
-    expect(screen.getByLabelText('AI provider')).toBeInTheDocument();
-    expect(screen.getByLabelText('AI model')).toBeInTheDocument();
+    expect(screen.getByLabelText('AI mode')).toBeInTheDocument();
+    expect(screen.queryByLabelText('AI provider')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('AI model')).not.toBeInTheDocument();
     expect(screen.getByText('Generation settings')).toBeInTheDocument();
     expect(screen.getByLabelText('AI configuration panel')).toHaveClass('eg-ai-config-panel');
     expect(screen.getByLabelText('AI configuration panel')).toHaveAttribute(
@@ -114,7 +115,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.click(screen.getByLabelText('Bring your own key'));
+    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
     await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
     await user.selectOptions(screen.getByLabelText('AI model'), 'gpt-4.1-mini');
 
@@ -140,7 +141,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.click(screen.getByLabelText('Bring your own key'));
+    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
     await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
     await user.type(screen.getByLabelText('API key'), 'sk-test-1234567890');
     await user.click(screen.getByText('Save key'));
@@ -162,7 +163,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.click(screen.getByLabelText('Bring your own key'));
+    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
     await user.selectOptions(screen.getByLabelText('AI provider'), 'anthropic');
     await user.click(screen.getByText('Reset AI settings'));
 
@@ -179,7 +180,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    expect(screen.getByLabelText('AI provider')).toBeInTheDocument();
+    expect(screen.queryByLabelText('AI provider')).not.toBeInTheDocument();
   });
 
   it('exposes react hooks and context helpers', async () => {
@@ -198,6 +199,7 @@ describe('AIConfigPanel', () => {
     expect(screen.getByTestId('hook-app-id')).toHaveTextContent('react-test-app');
 
     await user.click(screen.getByText('Hook set mode'));
+    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
     await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
 
     expect(screen.getByTestId('hook-model-count')).toHaveTextContent('2');
@@ -220,7 +222,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    await user.click(screen.getByLabelText('Bring your own key'));
+    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
     await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
 
     expect(events).toContain('byok:hosted');
@@ -259,18 +261,18 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
+    expect(screen.getByText('Reset AI settings')).toHaveAttribute(
+      'data-eg-ai-config-action',
+      'reset',
+    );
+
+    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
     expect(
       screen.getByLabelText('AI provider').closest('[data-eg-ai-config-field="provider"]'),
     ).not.toBeNull();
     expect(
       screen.getByLabelText('AI model').closest('[data-eg-ai-config-field="model"]'),
     ).not.toBeNull();
-    expect(screen.getByText('Reset AI settings')).toHaveAttribute(
-      'data-eg-ai-config-action',
-      'reset',
-    );
-
-    await user.click(screen.getByLabelText('Bring your own key'));
     expect(
       screen.getByText('Save key').closest('[data-eg-ai-config-actions="api-key"]'),
     ).not.toBeNull();
@@ -283,7 +285,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    expect(screen.getByLabelText('AI provider')).toBeInTheDocument();
+    expect(screen.queryByLabelText('AI provider')).not.toBeInTheDocument();
     expect(screen.queryByText('Enable category override')).not.toBeInTheDocument();
     expect(screen.getByText('Generation settings')).toBeInTheDocument();
   });
@@ -305,6 +307,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
+    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
     expect(screen.getByText('Evaluate')).toBeInTheDocument();
     expect(screen.getByText('Write')).toBeInTheDocument();
     expect(screen.getAllByText('Uses Default route settings.')).toHaveLength(2);
@@ -336,6 +339,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
+    await user.selectOptions(screen.getByLabelText('AI mode'), 'byok');
     await user.click(screen.getByText('Evaluate'));
     await user.click(screen.getByLabelText('Enable category override'));
     await user.selectOptions(screen.getByLabelText('Evaluate provider'), 'openai');

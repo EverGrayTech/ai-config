@@ -14,11 +14,8 @@ export function getAIUsagePresentation(
     return {
       modeLabel: appDefinition?.defaultMode?.label ?? 'App-provided AI',
       usageHint:
-        appDefinition?.defaultMode?.usageHint ??
-        appDefinition?.usagePresentation?.freeTierHint ??
-        'You are using the app-provided AI configuration.',
+        appDefinition?.defaultMode?.usageHint ?? appDefinition?.usagePresentation?.freeTierHint,
       freeTierHint: appDefinition?.usagePresentation?.freeTierHint,
-      costHint: 'Included with the app-provided mode when available.',
     };
   }
 

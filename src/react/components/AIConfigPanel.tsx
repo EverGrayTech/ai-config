@@ -76,7 +76,12 @@ function AIRouteSection({
 
 export function AIConfigPanel({ framed = false }: AIConfigPanelProps) {
   const appDefinition = useAIConfigAppDefinition();
+  const state = useAIConfigState();
   const categories = appDefinition.operationCategories ?? [];
+  const hasCategories = categories.length > 0;
+  const isByokMode = state.mode === 'byok';
+  const providerLabel = hasCategories ? 'Default provider' : 'Provider';
+  const modelLabel = hasCategories ? 'Default model' : 'Model';
 
   return (
     <section
@@ -86,14 +91,15 @@ export function AIConfigPanel({ framed = false }: AIConfigPanelProps) {
       data-eg-ai-config-framed={framed ? 'true' : 'false'}
     >
       <AIModeSelector />
-      <AIProviderSelector label="Default provider" ariaLabel="AI provider" />
-      <AIModelSelector label="Default model" ariaLabel="AI model" />
-      <AIApiKeyField />
-      <AICredentialStatus />
-      <AIGenerationSettingsForm
-        collapsible={categories.length > 0}
-        defaultOpen={categories.length === 0}
-      />
+      {isByokMode ? (
+        <>
+          <AIProviderSelector label={providerLabel} ariaLabel="AI provider" />
+          <AIModelSelector label={modelLabel} ariaLabel="AI model" />
+          <AIApiKeyField />
+          <AICredentialStatus />
+        </>
+      ) : null}
+      <AIGenerationSettingsForm collapsible defaultOpen={false} />
       {categories.map((category) => (
         <AIRouteSection
           key={category.key}
@@ -102,7 +108,7 @@ export function AIConfigPanel({ framed = false }: AIConfigPanelProps) {
           description={category.description}
         />
       ))}
-      <AIUsageHint />
+      {isByokMode ? <AIUsageHint /> : null}
       <AIConfigResetButton />
     </section>
   );

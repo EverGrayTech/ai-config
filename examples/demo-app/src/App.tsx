@@ -1,21 +1,20 @@
 import React, { useMemo, useState } from 'react';
 
-import { type AIConfigAppDefinition } from '@evergraytech/ai-config';
+import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
 
 import { DemoNav } from './components/DemoNav';
 import { DemoShell } from './components/DemoShell';
 import { ComponentGalleryScreen } from './screens/ComponentGalleryScreen';
-import { OverviewScreen } from './screens/OverviewScreen';
 import { RouteValidationScreen } from './screens/RouteValidationScreen';
 import { StateScenariosScreen } from './screens/StateScenariosScreen';
 
-type DemoScreenId = 'overview' | 'gallery' | 'states' | 'validation';
+type DemoScreenId = 'overview' | 'gallery' | 'states';
 
 const appDefinition: AIConfigAppDefinition = {
   appId: 'ai-config-demo-app',
   defaultMode: {
     enabled: true,
-    label: 'App-provided AI',
+    label: 'Free Trial',
     provider: 'hosted',
     model: 'hosted-model',
     usageHint: 'Demo free mode with app-provided access.',
@@ -37,7 +36,6 @@ export default function App() {
   const screens = useMemo(
     () => [
       { id: 'overview' as const, label: 'Overview' },
-      { id: 'validation' as const, label: 'Route validation' },
       { id: 'gallery' as const, label: 'Component gallery' },
       { id: 'states' as const, label: 'State scenarios' },
     ],
@@ -58,8 +56,7 @@ export default function App() {
         designSystemMode={designSystemMode}
         onToggleDesignSystemMode={() => setDesignSystemMode((value) => !value)}
       >
-        {screen === 'overview' ? <OverviewScreen appDefinition={appDefinition} /> : null}
-        {screen === 'validation' ? <RouteValidationScreen /> : null}
+        {screen === 'overview' ? <RouteValidationScreen /> : null}
         {screen === 'gallery' ? <ComponentGalleryScreen appDefinition={appDefinition} /> : null}
         {screen === 'states' ? <StateScenariosScreen appDefinition={appDefinition} /> : null}
       </DemoShell>

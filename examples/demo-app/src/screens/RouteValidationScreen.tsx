@@ -1,18 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  createAIConfigManager,
-  sanitizeAIConfigForDebug,
-  type AIConfigAppDefinition,
-  type AIConfigManager,
-  type AIConfigState,
-  type AIHostedAuthRequest,
-  type AIHostedAuthResult,
-  type AIHostedGatewayClient,
-  type AIHostedInvokeRequest,
-  type AIHostedInvokeSuccess,
-  type AIInvokeRequest,
-  type AIInvokeResult,
+import { createAIConfigManager, sanitizeAIConfigForDebug } from '@evergraytech/ai-config';
+import type {
+  AIConfigAppDefinition,
+  AIConfigManager,
+  AIConfigState,
+  AIHostedAuthRequest,
+  AIHostedAuthResult,
+  AIHostedGatewayClient,
+  AIHostedInvokeRequest,
+  AIHostedInvokeSuccess,
+  AIInvokeRequest,
+  AIInvokeResult,
 } from '@evergraytech/ai-config';
 import { AIConfigPanel, AIConfigProvider } from '@evergraytech/ai-config/react';
 
@@ -77,9 +76,7 @@ function createGatewayClient(
       });
 
       if (!response.ok || !payload?.token) {
-        throw new Error(
-          payload?.message ?? `Gateway auth failed with status ${response.status}.`,
-        );
+        throw new Error(payload?.message ?? `Gateway auth failed with status ${response.status}.`);
       }
 
       return payload satisfies AIHostedAuthResult;
@@ -139,24 +136,30 @@ function ValidationHarness({
   const [isInvoking, setIsInvoking] = useState(false);
   const [stateSnapshot, setStateSnapshot] = useState<unknown>(null);
 
-  const appendLog = (scope: LogEntry['scope'], event: string, payload: unknown) => {
-    setLogs((current) => [
-      {
-        id: ++logIdRef.current,
-        timestamp: new Date().toISOString(),
-        scope,
-        event,
-        payload,
-      },
-      ...current,
-    ]);
-  };
+  const gatewayBaseUrl = gatewayConfig.baseUrl;
+  const gatewayClientId = gatewayConfig.clientId;
+
+  const appendLog = React.useCallback(
+    (scope: LogEntry['scope'], event: string, payload: unknown) => {
+      setLogs((current) => [
+        {
+          id: ++logIdRef.current,
+          timestamp: new Date().toISOString(),
+          scope,
+          event,
+          payload,
+        },
+        ...current,
+      ]);
+    },
+    [],
+  );
 
   const manager = useMemo(() => {
     const nextManager = createAIConfigManager({
       appDefinition,
       hostedGateway: {
-        clientId: gatewayConfig.clientId,
+        clientId: gatewayClientId,
         gateway: createGatewayClient(gatewayConfig, appendLog),
       },
     });
@@ -164,7 +167,7 @@ function ValidationHarness({
     managerRef.current = nextManager;
     setStateSnapshot(sanitizeAIConfigForDebug(nextManager.getState()));
     return nextManager;
-  }, [appDefinition, gatewayConfig.baseUrl, gatewayConfig.clientId]);
+  }, [appDefinition, appendLog, gatewayClientId, gatewayConfig]);
 
   useEffect(() => {
     const unsubscribe = manager.subscribe((nextState: AIConfigState) => {
@@ -176,7 +179,7 @@ function ValidationHarness({
     appendLog('config', 'state:initial', sanitizeAIConfigForDebug(manager.getState()));
 
     return unsubscribe;
-  }, [manager]);
+  }, [appendLog, manager]);
 
   const invoke = async (category?: string) => {
     const effectiveManager = managerRef.current;
@@ -218,9 +221,9 @@ function ValidationHarness({
     <DemoCard title={title} description={description}>
       <div className="demo-stack">
         <div className="demo-note">
-          <strong>Gateway base URL:</strong> {gatewayConfig.baseUrl}
+          <strong>Gateway base URL:</strong> {gatewayBaseUrl}
           <br />
-          <strong>Client ID:</strong> {gatewayConfig.clientId}
+          <strong>Client ID:</strong> {gatewayClientId}
         </div>
 
         <AIConfigProvider appDefinition={appDefinition} manager={manager} loadOnMount={false}>
@@ -322,7 +325,7 @@ export function RouteValidationScreen() {
       appId: 'ai-config-demo-default-only',
       defaultMode: {
         enabled: true,
-        label: 'App-provided AI',
+        label: 'Free Trial',
         provider: 'hosted',
         model: 'hosted-model',
         usageHint: 'Default-only validation flow for hosted routing.',
@@ -344,7 +347,7 @@ export function RouteValidationScreen() {
       appId: 'ai-config-demo-categorized',
       defaultMode: {
         enabled: true,
-        label: 'App-provided AI',
+        label: 'Free Trial',
         provider: 'hosted',
         model: 'hosted-model',
         usageHint: 'Categorized validation flow for route overrides.',
@@ -376,8 +379,8 @@ export function RouteValidationScreen() {
   return (
     <div className="demo-stack">
       <DemoCard
-        title="Route validation guide"
-        description="Use this screen to validate Plans 13 and 14 against the real hosted gateway."
+        title="Overview validation guide"
+        description="Use this screen as the primary overview for validating both the streamlined panel UX and the hosted gateway routing flows."
       >
         <ul className="demo-list">
           <li>Use the default prompt or ask the model to identify itself.</li>
