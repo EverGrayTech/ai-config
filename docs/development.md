@@ -69,7 +69,12 @@ When adding new components, prefer extending the gallery and state-scenarios scr
 
 The route-validation screen can call a deployed `ai-gateway` instance.
 
-Set demo-specific Vite environment variables before running `pnpm demo`:
+The demo defaults its hosted base URL to the live service at `https://ai.evergraytech.com/`.
+
+For meaningful hosted validation, set a demo-specific client ID before running `pnpm demo`.
+You may also override the base URL when targeting a non-production gateway deployment.
+
+Set demo-specific Vite environment variables in `examples/demo-app/.env.local` or in the shell used to launch `pnpm demo`:
 
 ```bash
 VITE_AI_GATEWAY_BASE_URL=https://your-gateway.example.com
@@ -82,7 +87,9 @@ The demo uses these values to:
 - invoke against `POST /ai`
 - show request/response logs directly in the browser UI
 
-If the environment variables are not set, the demo falls back to placeholder values so the screen still renders, but live hosted invocation will not succeed until real values are provided.
+`VITE_AI_GATEWAY_CLIENT_ID` remains demo-app-scoped. It is consumed only by the local Vite demo build and does not become part of the published package API or a shared default for downstream applications.
+
+If `VITE_AI_GATEWAY_BASE_URL` is not set, the demo uses the live hosted gateway URL. If `VITE_AI_GATEWAY_CLIENT_ID` is not set, the screen still renders with a fallback demo value, but hosted auth/invocation may fail until a real demo client ID is provided.
 
 ## Styling validation workflow
 

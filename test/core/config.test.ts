@@ -475,7 +475,7 @@ describe('headless foundation', () => {
     expect(gateway.invoke).toHaveBeenCalledWith({
       token: 'hosted-token',
       provider: undefined,
-      model: 'evergray-default',
+      model: undefined,
       input: 'Hello hosted world',
       stream: undefined,
     });
@@ -648,6 +648,59 @@ describe('headless foundation', () => {
       code: 'hosted-invoke-failed',
       message: 'gateway unavailable',
       retryable: true,
+      upstream: undefined,
+    });
+  });
+
+  it('preserves upstream hosted invoke policy errors and normalizes category/retryability', async () => {
+    const error = new Error('Requested model "gpt-4o-mini" is not allowed for this hosted route.') as Error & {
+      status?: number;
+      code?: string;
+      category?: string;
+      retryable?: boolean;
+      details?: Record<string, string>;
+    };
+
+    error.status = 403;
+    error.code = 'policy-model-not-allowed';
+    error.category = 'policy';
+    error.retryable = false;
+    error.details = {
+      model: 'gpt-4o-mini',
+      reason: 'model_not_allowlisted',
+    };
+
+    const manager = createAIConfigManager({
+      appDefinition,
+      storage: createMemoryStorage(),
+      hostedGateway: {
+        clientId: 'stable-client-id',
+        gateway: {
+          authenticate: vi.fn().mockResolvedValue({ token: 'hosted-token' }),
+          invoke: vi.fn().mockRejectedValue(error),
+        },
+      },
+    });
+
+    const result = await manager.invoke({ input: 'Hello hosted world' });
+
+    expect(result).toEqual({
+      ok: false,
+      category: 'policy',
+      code: 'hosted-invoke-failed',
+      message: 'Requested model "gpt-4o-mini" is not allowed for this hosted route.',
+      retryable: false,
+      upstream: {
+        status: 403,
+        code: 'policy-model-not-allowed',
+        category: 'policy',
+        message: 'Requested model "gpt-4o-mini" is not allowed for this hosted route.',
+        retryable: false,
+        details: {
+          model: 'gpt-4o-mini',
+          reason: 'model_not_allowlisted',
+        },
+      },
     });
   });
 
@@ -747,14 +800,14 @@ describe('headless foundation', () => {
     expect(gateway.invoke).toHaveBeenNthCalledWith(1, {
       token: 'expired-token',
       provider: undefined,
-      model: 'evergray-default',
+      model: undefined,
       input: 'Hello hosted world',
       stream: undefined,
     });
     expect(gateway.invoke).toHaveBeenNthCalledWith(2, {
       token: 'fresh-token',
       provider: undefined,
-      model: 'evergray-default',
+      model: undefined,
       input: 'Hello hosted world',
       stream: undefined,
     });
@@ -855,7 +908,7 @@ describe('headless foundation', () => {
     expect(gateway.invoke).toHaveBeenCalledWith({
       token: 'hosted-token',
       provider: undefined,
-      model: 'evergray-default',
+      model: undefined,
       input: 'Hello hosted world',
       stream: undefined,
     });

@@ -11,6 +11,7 @@ import type {
   AICredentialRecord,
   AIGenerationSettings,
   AIHostedAuthResult,
+  AIHostedGatewayError,
   AIHostedInvokeSuccess,
   AIInvokeError,
   AIProviderId,
@@ -36,6 +37,93 @@ function getMissingCredentialMessage(provider: AIProviderId): string {
 
 function toErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
+}
+
+function getHostedErrorDetails(error: unknown): AIInvokeError['upstream'] {
+  if (!error || typeof error !== 'object') {
+    return undefined;
+  }
+
+  const hostedError = error as AIHostedGatewayError;
+
+  const upstream = {
+    status: hostedError.status,
+    code: hostedError.code,
+    category: hostedError.category,
+    message: hostedError.message,
+    retryable: hostedError.retryable,
+    details: hostedError.details,
+  };
+
+  if (
+    upstream.status === undefined &&
+    upstream.code === undefined &&
+    upstream.category === undefined &&
+    upstream.retryable === undefined &&
+    upstream.details === undefined
+  ) {
+    return undefined;
+  }
+
+  return upstream;
+}
+
+function normalizeHostedInvokeError(error: unknown): Pick<AIInvokeError, 'category' | 'code' | 'message' | 'retryable' | 'upstream'> {
+  const upstream = getHostedErrorDetails(error);
+
+  if (upstream?.category === 'rate-limit') {
+    return {
+      category: 'rate-limit',
+      code: 'hosted-invoke-failed',
+      message: upstream.message ?? toErrorMessage(error, 'Hosted invocation failed.'),
+      retryable: upstream.retryable ?? true,
+      upstream,
+    };
+  }
+
+  if (upstream?.category === 'policy' || upstream?.status === 403) {
+    return {
+      category: 'policy',
+      code: 'hosted-invoke-failed',
+      message: upstream.message ?? toErrorMessage(error, 'Hosted invocation was rejected by gateway policy.'),
+      retryable: upstream.retryable ?? false,
+      upstream,
+    };
+  }
+
+  if (upstream?.category === 'authentication' || upstream?.status === 401) {
+    return {
+      category: 'authentication',
+      code: 'hosted-invoke-failed',
+      message: upstream.message ?? toErrorMessage(error, 'Hosted invocation authentication failed.'),
+      retryable: upstream.retryable ?? true,
+      upstream,
+    };
+  }
+
+  return {
+    category: 'network',
+    code: 'hosted-invoke-failed',
+    message: upstream?.message ?? toErrorMessage(error, 'Hosted invocation failed.'),
+    retryable: upstream?.retryable ?? true,
+    upstream,
+  };
+}
+
+function shouldOmitHostedModel(
+  selectedProvider: AIProviderId,
+  selectedModel: string | null,
+  options: AIConfigManagerOptions,
+): boolean {
+  if (selectedProvider !== 'hosted') {
+    return false;
+  }
+
+  const defaultHostedModel = options.appDefinition.defaultMode?.provider === 'hosted'
+    ? (options.appDefinition.defaultMode.model ?? null)
+    : null;
+
+  return selectedModel == null || (defaultHostedModel != null && selectedModel === defaultHostedModel);
 }
 
 function getDeclaredCategoryKeys(options: AIConfigManagerOptions): Set<string> {
@@ -272,13 +360,16 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
             code: 'hosted-auth-failed',
             message: toErrorMessage(error, 'Hosted authentication failed.'),
             retryable: true,
+            upstream: getHostedErrorDetails(error),
           };
         }
 
         const invokeRequest = {
           token: auth.token,
           provider: selectedProvider === 'hosted' ? undefined : selectedProvider,
-          model: selectedModel ?? undefined,
+          model: shouldOmitHostedModel(selectedProvider, selectedModel, options)
+            ? undefined
+            : (selectedModel ?? undefined),
           input: request.input,
           stream: request.stream,
         };
@@ -291,10 +382,7 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
           if (!options.hostedGateway.shouldRefreshToken?.(error)) {
             return {
               ok: false,
-              category: 'network',
-              code: 'hosted-invoke-failed',
-              message: toErrorMessage(error, 'Hosted invocation failed.'),
-              retryable: true,
+              ...normalizeHostedInvokeError(error),
             };
           }
 
@@ -312,6 +400,7 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
               code: 'token-expired',
               message: toErrorMessage(refreshError, 'Hosted token refresh failed.'),
               retryable: true,
+              upstream: getHostedErrorDetails(refreshError),
             };
           }
 
@@ -321,12 +410,14 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
               token: refreshedAuth.token,
             });
           } catch (retryError) {
+            const normalizedRetryError = normalizeHostedInvokeError(retryError);
+
             return {
               ok: false,
-              category: 'network',
-              code: 'hosted-invoke-failed',
-              message: toErrorMessage(retryError, 'Hosted invocation failed after token refresh.'),
-              retryable: true,
+              ...normalizedRetryError,
+              message:
+                normalizedRetryError.upstream?.message ??
+                toErrorMessage(retryError, 'Hosted invocation failed after token refresh.'),
             };
           }
         }

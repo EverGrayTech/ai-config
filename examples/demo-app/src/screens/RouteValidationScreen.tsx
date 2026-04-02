@@ -7,6 +7,7 @@ import type {
   AIConfigState,
   AIHostedAuthRequest,
   AIHostedAuthResult,
+  AIHostedGatewayError,
   AIHostedGatewayClient,
   AIHostedInvokeRequest,
   AIHostedInvokeSuccess,
@@ -18,7 +19,7 @@ import { AIConfigPanel, AIConfigProvider } from '@evergraytech/ai-config/react';
 import { DemoCard } from '../components/DemoCard';
 
 const DEFAULT_PROMPT = 'What model are you? Please identify the model you are using.';
-const DEFAULT_GATEWAY_BASE_URL = 'https://example-ai-gateway.invalid';
+const DEFAULT_GATEWAY_BASE_URL = 'https://ai.evergraytech.com/';
 const DEFAULT_CLIENT_ID = 'demo-client-id';
 
 type LogEntry = {
@@ -76,7 +77,17 @@ function createGatewayClient(
       });
 
       if (!response.ok || !payload?.token) {
-        throw new Error(payload?.message ?? `Gateway auth failed with status ${response.status}.`);
+        const error = new Error(
+          payload?.message ?? `Gateway auth failed with status ${response.status}.`,
+        ) as AIHostedGatewayError;
+
+        error.status = response.status;
+        error.code = payload?.code;
+        error.category = payload?.category;
+        error.retryable = payload?.retryable;
+        error.details = payload?.details;
+
+        throw error;
       }
 
       return payload satisfies AIHostedAuthResult;
@@ -110,9 +121,17 @@ function createGatewayClient(
       });
 
       if (!response.ok || !payload?.provider || !payload?.model) {
-        throw new Error(
+        const error = new Error(
           payload?.message ?? `Gateway invoke failed with status ${response.status}.`,
-        );
+        ) as AIHostedGatewayError;
+
+        error.status = response.status;
+        error.code = payload?.code;
+        error.category = payload?.category;
+        error.retryable = payload?.retryable;
+        error.details = payload?.details;
+
+        throw error;
       }
 
       return payload satisfies AIHostedInvokeSuccess;
@@ -135,8 +154,6 @@ function ValidationHarness({
   const [invokeResult, setInvokeResult] = useState<AIInvokeResult | null>(null);
   const [isInvoking, setIsInvoking] = useState(false);
   const [stateSnapshot, setStateSnapshot] = useState<unknown>(null);
-
-  const gatewayBaseUrl = gatewayConfig.baseUrl;
   const gatewayClientId = gatewayConfig.clientId;
 
   const appendLog = React.useCallback(
@@ -220,12 +237,6 @@ function ValidationHarness({
   return (
     <DemoCard title={title} description={description}>
       <div className="demo-stack">
-        <div className="demo-note">
-          <strong>Gateway base URL:</strong> {gatewayBaseUrl}
-          <br />
-          <strong>Client ID:</strong> {gatewayClientId}
-        </div>
-
         <AIConfigProvider appDefinition={appDefinition} manager={manager} loadOnMount={false}>
           <AIConfigPanel />
         </AIConfigProvider>
@@ -327,7 +338,6 @@ export function RouteValidationScreen() {
         enabled: true,
         label: 'Free Trial',
         provider: 'hosted',
-        model: 'hosted-model',
         usageHint: 'Default-only validation flow for hosted routing.',
       },
       byok: {
@@ -349,7 +359,6 @@ export function RouteValidationScreen() {
         enabled: true,
         label: 'Free Trial',
         provider: 'hosted',
-        model: 'hosted-model',
         usageHint: 'Categorized validation flow for route overrides.',
       },
       byok: {

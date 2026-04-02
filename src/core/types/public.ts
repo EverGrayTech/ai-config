@@ -112,6 +112,14 @@ export interface AIInvokeError {
   message: string;
   retryable?: boolean;
   details?: Record<string, string | number | boolean | null | undefined>;
+  upstream?: {
+    status?: number;
+    code?: string;
+    category?: string;
+    message?: string;
+    retryable?: boolean;
+    details?: Record<string, string | number | boolean | null | undefined>;
+  };
 }
 
 export type AIInvokeResult = AIInvokeSuccess | AIInvokeError;
@@ -149,6 +157,14 @@ export interface AIHostedInvokeSuccess {
 export interface AIHostedGatewayClient {
   authenticate(request: AIHostedAuthRequest): Promise<AIHostedAuthResult>;
   invoke(request: AIHostedInvokeRequest): Promise<AIHostedInvokeSuccess>;
+}
+
+export interface AIHostedGatewayError extends Error {
+  status?: number;
+  code?: string;
+  category?: string;
+  retryable?: boolean;
+  details?: Record<string, string | number | boolean | null | undefined>;
 }
 
 export interface AIHostedGatewayOptions {
