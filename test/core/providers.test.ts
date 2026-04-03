@@ -7,8 +7,8 @@ import {
   discoverAvailableModels,
   getAIUsagePresentation,
   getAvailableModels,
-  getDiscoveredModels,
   getAvailableProviders,
+  getDiscoveredModels,
   getModelById,
   getModelCostWarning,
   getProviderById,
@@ -115,24 +115,31 @@ describe('provider registry and validation', () => {
   });
 
   it('discovers and caches openrouter models for later synchronous reads', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        data: [
-          {
-            id: 'anthropic/claude-3.5-sonnet-20240620',
-            name: 'Claude 3.5 Sonnet',
-            context_length: 200000,
-            pricing: { prompt: '0.000003' },
-          },
-        ],
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              id: 'anthropic/claude-3.5-sonnet-20240620',
+              name: 'Claude 3.5 Sonnet',
+              context_length: 200000,
+              pricing: { prompt: '0.000003' },
+            },
+          ],
+        }),
       }),
-    }));
+    );
 
-    const discovered = await discoverAvailableModels('openrouter', {}, {
-      ...appDefinition,
-      byok: { enabled: true, providers: ['anthropic', 'openai', 'openrouter'] },
-    });
+    const discovered = await discoverAvailableModels(
+      'openrouter',
+      {},
+      {
+        ...appDefinition,
+        byok: { enabled: true, providers: ['anthropic', 'openai', 'openrouter'] },
+      },
+    );
 
     expect(discovered).toEqual([
       {
@@ -153,30 +160,44 @@ describe('provider registry and validation', () => {
     ]);
 
     expect(getDiscoveredModels('openrouter')).toEqual(discovered);
-    expect(getAvailableModels('openrouter', {
-      ...appDefinition,
-      byok: { enabled: true, providers: ['anthropic', 'openai', 'openrouter'] },
-    })).toEqual(discovered);
+    expect(
+      getAvailableModels('openrouter', {
+        ...appDefinition,
+        byok: { enabled: true, providers: ['anthropic', 'openai', 'openrouter'] },
+      }),
+    ).toEqual(discovered);
   });
 
   it('returns empty list for openai discovery without an api key', async () => {
-    const discovered = await discoverAvailableModels('openai', {}, {
-      ...appDefinition,
-      byok: { enabled: true, providers: ['anthropic', 'openai'] },
-    });
+    const discovered = await discoverAvailableModels(
+      'openai',
+      {},
+      {
+        ...appDefinition,
+        byok: { enabled: true, providers: ['anthropic', 'openai'] },
+      },
+    );
 
     expect(discovered).toEqual([]);
   });
 
   it('returns curated advisory models for anthropic and gemini discovery', async () => {
-    const anthropic = await discoverAvailableModels('anthropic', {}, {
-      ...appDefinition,
-      byok: { enabled: true, providers: ['anthropic', 'gemini', 'openai'] },
-    });
-    const gemini = await discoverAvailableModels('gemini', {}, {
-      ...appDefinition,
-      byok: { enabled: true, providers: ['anthropic', 'gemini', 'openai'] },
-    });
+    const anthropic = await discoverAvailableModels(
+      'anthropic',
+      {},
+      {
+        ...appDefinition,
+        byok: { enabled: true, providers: ['anthropic', 'gemini', 'openai'] },
+      },
+    );
+    const gemini = await discoverAvailableModels(
+      'gemini',
+      {},
+      {
+        ...appDefinition,
+        byok: { enabled: true, providers: ['anthropic', 'gemini', 'openai'] },
+      },
+    );
 
     expect(anthropic.map((model) => model.id)).toEqual([
       'claude-3-5-sonnet-20240620',
@@ -189,10 +210,14 @@ describe('provider registry and validation', () => {
   it('returns cached-or-empty results when discovery fetch fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network failed')));
 
-    const discovered = await discoverAvailableModels('openrouter', { forceRefresh: true }, {
-      ...appDefinition,
-      byok: { enabled: true, providers: ['anthropic', 'openai', 'openrouter'] },
-    });
+    const discovered = await discoverAvailableModels(
+      'openrouter',
+      { forceRefresh: true },
+      {
+        ...appDefinition,
+        byok: { enabled: true, providers: ['anthropic', 'openai', 'openrouter'] },
+      },
+    );
 
     expect(discovered).toEqual(getDiscoveredModels('openrouter'));
   });

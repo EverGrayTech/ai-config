@@ -117,7 +117,7 @@ describe('AIConfigPanel', () => {
     );
 
     await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
-    await user.selectOptions(screen.getByLabelText('AI model'), 'gpt-4.1-mini');
+    await user.selectOptions(screen.getByLabelText('Model'), 'gpt-4.1-mini');
 
     const temperatureInput = screen.getByLabelText('Temperature');
     await user.clear(temperatureInput);
@@ -246,7 +246,11 @@ describe('AIConfigPanel', () => {
     byokUsageManager.setProvider('openai');
 
     const usageView = render(
-      <AIConfigProvider appDefinition={appDefinition} manager={byokUsageManager} loadOnMount={false}>
+      <AIConfigProvider
+        appDefinition={appDefinition}
+        manager={byokUsageManager}
+        loadOnMount={false}
+      >
         <AIUsageHint />
       </AIConfigProvider>,
     );
@@ -255,12 +259,18 @@ describe('AIConfigPanel', () => {
     usageView.unmount();
 
     const statusView = render(
-      <AIConfigProvider appDefinition={appDefinition} manager={byokUsageManager} loadOnMount={false}>
+      <AIConfigProvider
+        appDefinition={appDefinition}
+        manager={byokUsageManager}
+        loadOnMount={false}
+      >
         <AIConfigStatus />
       </AIConfigProvider>,
     );
 
-    expect(statusView.getByText('Add an API key before invoking this provider.')).toBeInTheDocument();
+    expect(
+      statusView.getByText('Add an API key before invoking this provider.'),
+    ).toBeInTheDocument();
     statusView.unmount();
   });
 
@@ -305,16 +315,15 @@ describe('AIConfigPanel', () => {
     missingStatus.unmount();
 
     const savedStatus = render(
-      <AIConfigProvider
-        appDefinition={appDefinition}
-        manager={savedKeyManager}
-        loadOnMount={false}
-      >
+      <AIConfigProvider appDefinition={appDefinition} manager={savedKeyManager} loadOnMount={false}>
         <AICredentialStatus />
       </AIConfigProvider>,
     );
 
-    expect(savedStatus.getByText(/Saved key:/)).toHaveAttribute('data-eg-ai-config-status', 'saved');
+    expect(savedStatus.getByText(/Saved key:/)).toHaveAttribute(
+      'data-eg-ai-config-status',
+      'saved',
+    );
     expect(savedStatus.getByText('sk-t••••7890')).toBeInTheDocument();
     savedStatus.unmount();
 
@@ -328,9 +337,7 @@ describe('AIConfigPanel', () => {
     await user.type(screen.getByLabelText('API key'), 'sk-fresh-123456');
     await user.tab();
 
-    expect(
-      screen.getByRole('option', { name: /OpenAI — configured/ }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /OpenAI — configured/ })).toBeInTheDocument();
   });
 
   it('exposes stable styling hooks for key sections and actions', async () => {
@@ -350,7 +357,7 @@ describe('AIConfigPanel', () => {
     await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
     expect(screen.queryByLabelText('AI provider')).not.toBeInTheDocument();
     expect(
-      screen.getByLabelText('AI model').closest('[data-eg-ai-config-field="model"]'),
+      screen.getByLabelText('Model').closest('[data-eg-ai-config-field="model"]'),
     ).not.toBeNull();
     expect(
       screen.getByText('Clear key').closest('[data-eg-ai-config-actions="api-key"]'),
@@ -389,7 +396,7 @@ describe('AIConfigPanel', () => {
     await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
     expect(screen.getByText('Evaluate')).toBeInTheDocument();
     expect(screen.getByText('Write')).toBeInTheDocument();
-    expect(screen.getAllByText('Uses Default route settings.')).toHaveLength(2);
+    expect(screen.getAllByText('Uses Default settings until enabled.')).toHaveLength(2);
 
     const evaluateSection = screen.getByText('Evaluate').closest('details');
     if (!evaluateSection) {
@@ -399,9 +406,9 @@ describe('AIConfigPanel', () => {
     await user.click(screen.getAllByText('Evaluate')[0]);
     await user.click(within(evaluateSection).getByLabelText('Enable category override'));
 
-    expect(screen.getByLabelText('Evaluate provider')).toBeInTheDocument();
-    expect(screen.getByLabelText('Evaluate model')).toBeInTheDocument();
-    expect(screen.getByText('Evaluate generation settings')).toBeInTheDocument();
+    expect(screen.getByLabelText('evaluate provider')).toBeInTheDocument();
+    expect(screen.getByLabelText('evaluate model')).toBeInTheDocument();
+    expect(screen.getByText('Model generation settings')).toBeInTheDocument();
   });
 
   it('updates category-specific provider, model, and generation settings', async () => {
@@ -421,10 +428,9 @@ describe('AIConfigPanel', () => {
     await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
     await user.click(screen.getByText('Evaluate'));
     await user.click(screen.getByLabelText('Enable category override'));
-    await user.selectOptions(screen.getByLabelText('Evaluate provider'), 'openai');
-    await user.selectOptions(screen.getByLabelText('Evaluate model'), 'gpt-4.1-mini');
-    await user.click(screen.getByText('Evaluate generation settings'));
-
+    expect(screen.getAllByLabelText('AI Provider')[1]).toHaveValue('default');
+    await user.selectOptions(screen.getAllByLabelText('AI Provider')[1], 'openai');
+    await user.selectOptions(screen.getByLabelText('evaluate model'), 'gpt-4.1-mini');
     const tempInputs = screen.getAllByLabelText('Temperature');
     const evaluateTemperature = tempInputs[tempInputs.length - 1];
     await user.clear(evaluateTemperature);

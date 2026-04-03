@@ -44,6 +44,19 @@ pnpm add @evergraytech/ai-config react
 
 Use the headless API from `@evergraytech/ai-config`, the optional React layer from `@evergraytech/ai-config/react`, and the base stylesheet from `@evergraytech/ai-config/styles/base.css`.
 
+The published package consumable shape is:
+
+- headless/core entrypoint: `@evergraytech/ai-config`
+- React entrypoint: `@evergraytech/ai-config/react`
+- stylesheet entrypoint: `@evergraytech/ai-config/styles/base.css`
+
+For maintainers and downstream adopters verifying installed artifacts, the package now ships these public root files as published entrypoints:
+
+- `dist/index.js`
+- `dist/index.d.ts`
+- `dist/react.js`
+- `dist/react.d.ts`
+
 ## Documentation map
 
 - [Consumption Guide](docs/consumption-guide.md) — canonical downstream integration guide

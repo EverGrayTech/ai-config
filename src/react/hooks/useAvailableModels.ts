@@ -2,11 +2,7 @@
 
 import { useEffect } from 'react';
 
-import {
-  type AIModelDescriptor,
-  discoverAvailableModels,
-  getAvailableModels,
-} from '../../index';
+import { type AIModelDescriptor, discoverAvailableModels, getAvailableModels } from '../../index';
 import { useAIConfig, useAIConfigAppDefinition } from '../context/AIConfigContext';
 
 export function useAvailableModels(routeKey: 'default' | string = 'default'): AIModelDescriptor[] {

@@ -85,11 +85,9 @@ function saveCachedEntry(cacheKey: string, models: AIModelDescriptor[]): AIModel
 
 function getCuratedModels(provider: AIProviderId): AIModelDescriptor[] {
   if (provider === 'anthropic') {
-    return [
-      'claude-3-5-sonnet-20240620',
-      'claude-3-opus-20240229',
-      'claude-3-haiku-20240307',
-    ].map((id) => ({ id, label: id, provider }));
+    return ['claude-3-5-sonnet-20240620', 'claude-3-opus-20240229', 'claude-3-haiku-20240307'].map(
+      (id) => ({ id, label: id, provider }),
+    );
   }
 
   if (provider === 'gemini') {
@@ -105,17 +103,18 @@ function filterOpenAIModel(id: string): boolean {
 
 async function fetchOpenRouterModels(signal?: AbortSignal): Promise<AIModelDescriptor[]> {
   const response = await fetch('https://openrouter.ai/api/v1/models', { signal });
-  const payload = (await response.json().catch(() => null)) as
-    | { data?: OpenRouterModelResponse[] }
-    | null;
+  const payload = (await response.json().catch(() => null)) as {
+    data?: OpenRouterModelResponse[];
+  } | null;
 
   if (!response.ok || !payload?.data) {
     return [];
   }
 
   return payload.data
-    .filter((model): model is Required<Pick<OpenRouterModelResponse, 'id'>> & OpenRouterModelResponse =>
-      typeof model.id === 'string' && model.id.length > 0,
+    .filter(
+      (model): model is Required<Pick<OpenRouterModelResponse, 'id'>> & OpenRouterModelResponse =>
+        typeof model.id === 'string' && model.id.length > 0,
     )
     .map((model) => ({
       id: model.id,
@@ -140,17 +139,18 @@ async function fetchOpenAIModels(
     },
   });
 
-  const payload = (await response.json().catch(() => null)) as
-    | { data?: OpenAIModelResponse[] }
-    | null;
+  const payload = (await response.json().catch(() => null)) as {
+    data?: OpenAIModelResponse[];
+  } | null;
 
   if (!response.ok || !payload?.data) {
     return [];
   }
 
   return payload.data
-    .filter((model): model is Required<Pick<OpenAIModelResponse, 'id'>> & OpenAIModelResponse =>
-      typeof model.id === 'string' && model.id.length > 0,
+    .filter(
+      (model): model is Required<Pick<OpenAIModelResponse, 'id'>> & OpenAIModelResponse =>
+        typeof model.id === 'string' && model.id.length > 0,
     )
     .filter((model) => filterOpenAIModel(model.id))
     .map((model) => ({
@@ -169,7 +169,9 @@ function applyModelFilter(
 ): AIModelDescriptor[] {
   return models
     .filter((model) => (appDefinition?.modelFilter ? appDefinition.modelFilter(model) : true))
-    .sort((left, right) => left.label.localeCompare(right.label, undefined, { sensitivity: 'base' }));
+    .sort((left, right) =>
+      left.label.localeCompare(right.label, undefined, { sensitivity: 'base' }),
+    );
 }
 
 export function getDiscoveredModels(

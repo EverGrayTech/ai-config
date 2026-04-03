@@ -656,7 +656,9 @@ describe('headless foundation', () => {
   });
 
   it('preserves upstream hosted invoke policy errors and normalizes category/retryability', async () => {
-    const error = new Error('Requested model "gpt-4o-mini" is not allowed for this hosted route.') as Error & {
+    const error = new Error(
+      'Requested model "gpt-4o-mini" is not allowed for this hosted route.',
+    ) as Error & {
       status?: number;
       code?: string;
       category?: string;

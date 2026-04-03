@@ -1,15 +1,20 @@
 'use client';
 
-import React from 'react';
+import type React from 'react';
 
-import { useAIConfigActions, useAIConfigAppDefinition, useAIConfigState } from '../context/AIConfigContext';
+import type { AIProviderId } from '../../index';
+import {
+  useAIConfigActions,
+  useAIConfigAppDefinition,
+  useAIConfigState,
+} from '../context/AIConfigContext';
 import { AIApiKeyField } from './AIApiKeyField';
 import { AIConfigResetButton } from './AIConfigResetButton';
 import { AIConfigStatus } from './AIConfigStatus';
 import { AIGenerationSettingsForm } from './AIGenerationSettingsForm';
 import { AIModeSelector } from './AIModeSelector';
 import { AIModelSelector } from './AIModelSelector';
-import type { AIProviderId } from '../../index';
+import { AIProviderSelector } from './AIProviderSelector';
 
 export interface AIConfigPanelProps {
   framed?: boolean;
@@ -73,21 +78,50 @@ function resolveRouteModel(
   return route.model;
 }
 
-function AIAssignedParameters({ routeKey = 'default', label }: { routeKey?: 'default' | string; label?: string }) {
+function AIAssignedParameters({
+  routeKey = 'default',
+  label,
+}: { routeKey?: 'default' | string; label?: string }) {
   const state = useAIConfigState();
+  const route = routeKey === 'default' ? null : state.routes?.categories?.[routeKey];
   const provider = resolveRouteProvider(state, routeKey);
   const model = resolveRouteModel(state, routeKey);
-  const showByokFields = provider != null;
+  const showByokFields = routeKey === 'default' ? provider != null : route?.enabled;
+
+  const routeLabel = label ?? 'Route';
+  const routeControlLabel = routeKey === 'default' ? routeLabel : routeKey;
 
   return (
     <>
       <AIModeSelector routeKey={routeKey} />
       <AIApiKeyField provider={provider} visible={showByokFields} />
       {showByokFields ? (
-        <AIModelSelector routeKey={routeKey} label={label ?? 'Model'} ariaLabel={label ?? 'AI model'} />
+        <>
+          {routeKey !== 'default' ? (
+            <AIProviderSelector
+              routeKey={routeKey}
+              label={`${routeControlLabel} provider`}
+              ariaLabel={`${routeControlLabel} provider`}
+            />
+          ) : null}
+          {routeKey !== 'default' || provider != null ? (
+            <AIModelSelector
+              routeKey={routeKey}
+              label={routeKey === 'default' ? (label ?? 'Model') : `${routeControlLabel} model`}
+              ariaLabel={
+                routeKey === 'default' ? (label ?? 'AI model') : `${routeControlLabel} model`
+              }
+            />
+          ) : null}
+        </>
       ) : null}
       <AIConfigStatus provider={provider} model={model} visible={showByokFields} />
-      <AIGenerationSettingsForm collapsible defaultOpen={false} />
+      <AIGenerationSettingsForm
+        routeKey={routeKey}
+        collapsible
+        defaultOpen={false}
+        title={routeKey === 'default' ? 'Generation settings' : `${routeLabel} generation settings`}
+      />
     </>
   );
 }
@@ -129,21 +163,27 @@ function AIRouteSection({
     >
       <summary className="eg-ai-config-route-summary">
         <span className="eg-ai-config-route-summary-copy">
-          {formatSectionHeading(label, description ?? 'Uses a category-specific override when enabled.')}
+          {formatSectionHeading(
+            label,
+            description ?? 'Uses a category-specific override when enabled.',
+          )}
         </span>
-        <label
-          className="eg-ai-config-choice eg-ai-config-route-toggle"
-          onClick={(event) => event.stopPropagation()}
-        >
+        <label className="eg-ai-config-choice eg-ai-config-route-toggle">
           <input
             type="checkbox"
+            aria-label="Enable category override"
             checked={route.enabled}
+            onClick={(event) => event.stopPropagation()}
             onChange={(event) => actions.setCategoryEnabled(categoryKey, event.target.checked)}
           />
           Override
         </label>
       </summary>
-      {route.enabled ? <AIAssignedParameters routeKey={categoryKey} label="Model" /> : <p className="eg-ai-config-route-inheritance">Uses Default settings until enabled.</p>}
+      {route.enabled ? (
+        <AIAssignedParameters routeKey={categoryKey} label="Model" />
+      ) : (
+        <p className="eg-ai-config-route-inheritance">Uses Default settings until enabled.</p>
+      )}
     </details>
   );
 }

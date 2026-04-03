@@ -73,7 +73,17 @@ function getHostedErrorDetails(error: unknown): AIInvokeError['upstream'] {
   return upstream;
 }
 
-function normalizeHostedInvokeError(error: unknown): Pick<AIInvokeError, 'category' | 'code' | 'message' | 'retryable' | 'upstream'> {
+function getHostedGatewayOptions(options: AIConfigManagerOptions) {
+  if (!options.hostedGateway) {
+    throw new Error('Hosted gateway execution is not configured.');
+  }
+
+  return options.hostedGateway;
+}
+
+function normalizeHostedInvokeError(
+  error: unknown,
+): Pick<AIInvokeError, 'category' | 'code' | 'message' | 'retryable' | 'upstream'> {
   const upstream = getHostedErrorDetails(error);
 
   if (upstream?.category === 'rate-limit') {
@@ -90,7 +100,9 @@ function normalizeHostedInvokeError(error: unknown): Pick<AIInvokeError, 'catego
     return {
       category: 'policy',
       code: 'hosted-invoke-failed',
-      message: upstream.message ?? toErrorMessage(error, 'Hosted invocation was rejected by gateway policy.'),
+      message:
+        upstream.message ??
+        toErrorMessage(error, 'Hosted invocation was rejected by gateway policy.'),
       retryable: upstream.retryable ?? false,
       upstream,
     };
@@ -100,7 +112,8 @@ function normalizeHostedInvokeError(error: unknown): Pick<AIInvokeError, 'catego
     return {
       category: 'authentication',
       code: 'hosted-invoke-failed',
-      message: upstream.message ?? toErrorMessage(error, 'Hosted invocation authentication failed.'),
+      message:
+        upstream.message ?? toErrorMessage(error, 'Hosted invocation authentication failed.'),
       retryable: upstream.retryable ?? true,
       upstream,
     };
@@ -115,10 +128,14 @@ function normalizeHostedInvokeError(error: unknown): Pick<AIInvokeError, 'catego
   };
 }
 
-async function authenticateHostedGateway(options: AIConfigManagerOptions): Promise<AIHostedAuthResult> {
-  return options.hostedGateway!.gateway.authenticate({
+async function authenticateHostedGateway(
+  options: AIConfigManagerOptions,
+): Promise<AIHostedAuthResult> {
+  const hostedGateway = getHostedGatewayOptions(options);
+
+  return hostedGateway.gateway.authenticate({
     appId: options.appDefinition.appId,
-    clientId: options.hostedGateway!.clientId,
+    clientId: hostedGateway.clientId,
   });
 }
 
@@ -133,7 +150,7 @@ async function invokeHostedGateway(
     stream?: boolean;
   },
 ): Promise<AIHostedInvokeSuccess> {
-  return options.hostedGateway!.gateway.invoke(invokeRequest);
+  return getHostedGatewayOptions(options).gateway.invoke(invokeRequest);
 }
 
 function shouldOmitHostedModel(
@@ -145,11 +162,14 @@ function shouldOmitHostedModel(
     return false;
   }
 
-  const defaultHostedModel = options.appDefinition.defaultMode?.provider === 'hosted'
-    ? (options.appDefinition.defaultMode.model ?? null)
-    : null;
+  const defaultHostedModel =
+    options.appDefinition.defaultMode?.provider === 'hosted'
+      ? (options.appDefinition.defaultMode.model ?? null)
+      : null;
 
-  return selectedModel == null || (defaultHostedModel != null && selectedModel === defaultHostedModel);
+  return (
+    selectedModel == null || (defaultHostedModel != null && selectedModel === defaultHostedModel)
+  );
 }
 
 function getDeclaredCategoryKeys(options: AIConfigManagerOptions): Set<string> {
@@ -359,7 +379,9 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
       assign(resetAIConfigState(options.appDefinition), { persist: false });
     },
     async invoke(request) {
-      flushPendingState((request as AIInvokeRequest & { __resolvedState?: AIConfigState }).__resolvedState);
+      flushPendingState(
+        (request as AIInvokeRequest & { __resolvedState?: AIConfigState }).__resolvedState,
+      );
 
       const resolved = resolveInvokeRoute(state, options, request.category);
       if ('error' in resolved) {
@@ -504,11 +526,11 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
         output: response.output,
         executionPath: resolved.mode === 'byok' ? 'byok-gateway' : 'hosted',
         providerLabel: getProviderById(
-          (resolved.mode === 'byok' ? selectedProvider : (response.provider as AIProviderId)),
+          resolved.mode === 'byok' ? selectedProvider : (response.provider as AIProviderId),
           options.appDefinition,
         )?.label,
         modelLabel: getModelById(
-          (resolved.mode === 'byok' ? selectedProvider : (response.provider as AIProviderId)),
+          resolved.mode === 'byok' ? selectedProvider : (response.provider as AIProviderId),
           response.model,
           options.appDefinition,
         )?.label,

@@ -1,19 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  type AIConfigAppDefinition,
+  type AIConfigManager,
+  type AIConfigState,
+  type AIHostedAuthRequest,
+  type AIHostedAuthResult,
+  type AIHostedGatewayClient,
+  type AIHostedGatewayError,
+  type AIHostedInvokeRequest,
+  type AIHostedInvokeSuccess,
+  type AIInvokeRequest,
+  type AIInvokeResult,
   createAIConfigManager,
   sanitizeAIConfigForDebug,
-  AIConfigAppDefinition,
-  AIConfigManager,
-  AIConfigState,
-  AIHostedAuthRequest,
-  AIHostedAuthResult,
-  AIHostedGatewayClient,
-  AIHostedGatewayError,
-  AIHostedInvokeRequest,
-  AIHostedInvokeSuccess,
-  AIInvokeRequest,
-  AIInvokeResult,
 } from '@evergraytech/ai-config';
 import { AIConfigPanel, AIConfigProvider } from '@evergraytech/ai-config/react';
 
@@ -45,10 +45,7 @@ type ValidationHarnessProps = {
   gatewayConfig: DemoGatewayConfig;
 };
 
-function resolveDisplayedInvokeSnapshot(
-  state: AIConfigState,
-  category?: string | null,
-) {
+function resolveDisplayedInvokeSnapshot(state: AIConfigState, category?: string | null) {
   const defaultRoute = state.routes?.default ?? {
     provider: state.selectedProvider,
     model: state.selectedModel,
@@ -336,7 +333,11 @@ function ValidationHarness({
           <div className="demo-invoke-controls">
             <label className="demo-field">
               Prompt
-              <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} rows={3} />
+              <textarea
+                value={prompt}
+                onChange={(event) => setPrompt(event.target.value)}
+                rows={3}
+              />
             </label>
 
             {categoryOptions.length > 0 ? (
@@ -359,12 +360,12 @@ function ValidationHarness({
             ) : null}
 
             <div className="demo-button-row">
-              <button type="button" onClick={() => invoke(activeCategory || undefined)} disabled={isInvoking}>
-                {isInvoking
-                  ? 'Invoking…'
-                  : activeCategory
-                    ? `Invoke ${activeCategory}`
-                    : 'Invoke'}
+              <button
+                type="button"
+                onClick={() => invoke(activeCategory || undefined)}
+                disabled={isInvoking}
+              >
+                {isInvoking ? 'Invoking…' : activeCategory ? `Invoke ${activeCategory}` : 'Invoke'}
               </button>
             </div>
           </div>
@@ -373,9 +374,7 @@ function ValidationHarness({
         <section className="demo-section-group" aria-label="Invocation results">
           <div className="demo-section-heading">
             <h4>Request and Results</h4>
-            <p>
-              Review the latest invocation request and the returned results.
-            </p>
+            <p>Review the latest invocation request and the returned results.</p>
           </div>
           <div className="demo-grid demo-grid--logs">
             <section className="demo-log-panel">
@@ -401,7 +400,9 @@ function ValidationHarness({
 
             <section
               className="demo-log-panel"
-              data-demo-result-status={invokeResult == null ? 'idle' : invokeResult.ok ? 'success' : 'error'}
+              data-demo-result-status={
+                invokeResult == null ? 'idle' : invokeResult.ok ? 'success' : 'error'
+              }
             >
               <h4>Latest invocation result</h4>
               {invokeMeta ? (

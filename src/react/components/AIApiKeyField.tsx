@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { redactCredential, type AIProviderId } from '../../index';
+import { type AIProviderId, redactCredential } from '../../index';
 import { useAIConfigActions, useAIConfigState } from '../context/AIConfigContext';
 
 export interface AIApiKeyFieldProps {
@@ -19,7 +19,9 @@ export function AIApiKeyField({ provider, visible = true }: AIApiKeyFieldProps =
   const credential = selectedProvider ? state.credentials[selectedProvider] : undefined;
   const savedValue = credential?.apiKey;
   const hasSavedKey = Boolean(credential?.isPresent && savedValue);
-  const placeholder = hasSavedKey ? (redactCredential(savedValue) ?? 'Saved key') : 'Specify the API key for the selected Provider';
+  const placeholder = hasSavedKey
+    ? (redactCredential(savedValue) ?? 'Saved key')
+    : 'Specify the API key for the selected Provider';
 
   useEffect(() => {
     return () => {

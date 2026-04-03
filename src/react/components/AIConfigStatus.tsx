@@ -23,9 +23,9 @@ export function AIConfigStatus({ provider, model, visible = true }: AIConfigStat
 
   if (!selectedProvider) {
     return (
-      <p className="eg-ai-config-status" data-eg-ai-config-status="warning" role="status">
+      <output className="eg-ai-config-status" data-eg-ai-config-status="warning">
         Select a provider to configure bring-your-own-key access.
-      </p>
+      </output>
     );
   }
 
@@ -49,8 +49,8 @@ export function AIConfigStatus({ provider, model, visible = true }: AIConfigStat
   }
 
   return (
-    <p className="eg-ai-config-status" data-eg-ai-config-status="ready" role="status">
+    <output className="eg-ai-config-status" data-eg-ai-config-status="ready">
       Provider, API key, and model are configured.
-    </p>
+    </output>
   );
 }

@@ -169,6 +169,14 @@ pnpm build
 pnpm pack --dry-run
 ```
 
+Before publish, confirm the packed artifact matches the documented public package surface:
+
+- `@evergraytech/ai-config` -> `dist/index.js` and `dist/index.d.ts`
+- `@evergraytech/ai-config/react` -> `dist/react.js` and `dist/react.d.ts`
+- `@evergraytech/ai-config/styles/base.css` remains included as a public style entrypoint
+
+If any published package metadata points consumers at missing files or incidental internal layout such as `dist/src/...`, treat that as a release blocker and fix it in the package before downstream adoption continues.
+
 ### Publish the package
 
 ```sh

@@ -28,6 +28,17 @@ pnpm add @evergraytech/ai-config react
 - React APIs from `@evergraytech/ai-config/react`
 - stylesheet from `@evergraytech/ai-config/styles/base.css`
 
+These import paths are the intended public package surface and should not require consumer-local path aliases or deep imports into `dist/`.
+
+The corrected published package shape exposes the corresponding root entry artifacts:
+
+- `dist/index.js`
+- `dist/index.d.ts`
+- `dist/react.js`
+- `dist/react.d.ts`
+
+If a downstream app previously encountered missing-type resolution caused by `dist/src/*.d.ts` vs `dist/*.d.ts` mismatch in `0.2.0`, treat that as an upstream packaging defect resolved by the corrected release, not as something consumers should patch around locally.
+
 ## Integration boundaries
 
 Use this package for configuration, settings state, provider/model selection, validation surfaces, and related UI.

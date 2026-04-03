@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-import { AIConfigAppDefinition } from '@evergraytech/ai-config';
+import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
 
 import { DemoNav } from './components/DemoNav';
 import { DemoShell } from './components/DemoShell';

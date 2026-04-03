@@ -1,6 +1,6 @@
 {
   "name": "@evergraytech/ai-config",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Local-first AI configuration layer enabling zero-setup defaults and optional bring-your-own-key model access across providers",
   "license": "Apache-2.0",
   "type": "module",
@@ -17,14 +17,8 @@
     },
     "./styles/base.css": "./styles/base.css"
   },
-  "sideEffects": [
-    "./styles/base.css"
-  ],
-  "files": [
-    "dist",
-    "styles",
-    "README.md"
-  ],
+  "sideEffects": ["./styles/base.css"],
+  "files": ["dist", "styles", "README.md"],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },

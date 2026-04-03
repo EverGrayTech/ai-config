@@ -31,7 +31,9 @@ export function AIModeSelector({ routeKey = 'default' }: AIModeSelectorProps = {
       ? state.mode === 'default'
         ? 'default'
         : (state.selectedProvider ?? '')
-      : !categoryRoute?.enabled || categoryRoute.provider == null || categoryRoute.provider === 'hosted'
+      : !categoryRoute?.enabled ||
+          categoryRoute.provider == null ||
+          categoryRoute.provider === 'hosted'
         ? 'default'
         : categoryRoute.provider;
 
