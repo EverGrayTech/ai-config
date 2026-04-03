@@ -1,11 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   type AIConfigAppDefinition,
   builtInProviders,
   createProviderRegistry,
+  discoverAvailableModels,
   getAIUsagePresentation,
   getAvailableModels,
+  getDiscoveredModels,
   getAvailableProviders,
   getModelById,
   getModelCostWarning,
@@ -34,6 +36,11 @@ describe('provider registry and validation', () => {
     },
     modelFilter: (model) => model.id !== 'gpt-4.1',
   };
+
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
 
   it('exposes built-in providers', () => {
     expect(builtInProviders.length).toBeGreaterThanOrEqual(4);
@@ -107,6 +114,89 @@ describe('provider registry and validation', () => {
     expect(getAvailableModels('gemini', appDefinition)).toEqual([]);
   });
 
+  it('discovers and caches openrouter models for later synchronous reads', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [
+          {
+            id: 'anthropic/claude-3.5-sonnet-20240620',
+            name: 'Claude 3.5 Sonnet',
+            context_length: 200000,
+            pricing: { prompt: '0.000003' },
+          },
+        ],
+      }),
+    }));
+
+    const discovered = await discoverAvailableModels('openrouter', {}, {
+      ...appDefinition,
+      byok: { enabled: true, providers: ['anthropic', 'openai', 'openrouter'] },
+    });
+
+    expect(discovered).toEqual([
+      {
+        id: 'anthropic/claude-3.5-sonnet-20240620',
+        label: 'Claude 3.5 Sonnet',
+        provider: 'openrouter',
+        metadata: {
+          contextLength: 200000,
+          pricing: { prompt: '0.000003' },
+          raw: {
+            id: 'anthropic/claude-3.5-sonnet-20240620',
+            name: 'Claude 3.5 Sonnet',
+            context_length: 200000,
+            pricing: { prompt: '0.000003' },
+          },
+        },
+      },
+    ]);
+
+    expect(getDiscoveredModels('openrouter')).toEqual(discovered);
+    expect(getAvailableModels('openrouter', {
+      ...appDefinition,
+      byok: { enabled: true, providers: ['anthropic', 'openai', 'openrouter'] },
+    })).toEqual(discovered);
+  });
+
+  it('returns empty list for openai discovery without an api key', async () => {
+    const discovered = await discoverAvailableModels('openai', {}, {
+      ...appDefinition,
+      byok: { enabled: true, providers: ['anthropic', 'openai'] },
+    });
+
+    expect(discovered).toEqual([]);
+  });
+
+  it('returns curated advisory models for anthropic and gemini discovery', async () => {
+    const anthropic = await discoverAvailableModels('anthropic', {}, {
+      ...appDefinition,
+      byok: { enabled: true, providers: ['anthropic', 'gemini', 'openai'] },
+    });
+    const gemini = await discoverAvailableModels('gemini', {}, {
+      ...appDefinition,
+      byok: { enabled: true, providers: ['anthropic', 'gemini', 'openai'] },
+    });
+
+    expect(anthropic.map((model) => model.id)).toEqual([
+      'claude-3-5-sonnet-20240620',
+      'claude-3-haiku-20240307',
+      'claude-3-opus-20240229',
+    ]);
+    expect(gemini.map((model) => model.id)).toEqual(['gemini-1.5-flash', 'gemini-1.5-pro']);
+  });
+
+  it('returns cached-or-empty results when discovery fetch fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network failed')));
+
+    const discovered = await discoverAvailableModels('openrouter', { forceRefresh: true }, {
+      ...appDefinition,
+      byok: { enabled: true, providers: ['anthropic', 'openai', 'openrouter'] },
+    });
+
+    expect(discovered).toEqual(getDiscoveredModels('openrouter'));
+  });
+
   it('returns default usage presentation for app-provided mode', () => {
     const usage = getAIUsagePresentation(
       {
@@ -147,7 +237,9 @@ describe('provider registry and validation', () => {
   });
 
   it('provides high-cost warnings when model metadata indicates it', () => {
-    const model = getModelById('anthropic', 'claude-3-7-sonnet', appDefinition);
+    const model = builtInProviders
+      .find((provider) => provider.id === 'anthropic')
+      ?.models.find((entry) => entry.id === 'claude-3-7-sonnet');
 
     expect(getModelCostWarning(model)).toContain('higher usage cost');
   });

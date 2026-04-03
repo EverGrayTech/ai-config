@@ -6,6 +6,7 @@ import type {
   AIProviderRegistryOptions,
 } from '../types/public';
 import { builtInProviders } from './builtins';
+import { getDiscoveredModels } from './discovery';
 
 function mergeProviderDefinition(
   provider: AIProviderDefinition,
@@ -93,6 +94,11 @@ export function getAvailableModels(
   appDefinition?: AIConfigAppDefinition,
   options?: AIProviderRegistryOptions,
 ): AIModelDescriptor[] {
+  const discoveredModels = getDiscoveredModels(providerId, appDefinition);
+  if (discoveredModels.length > 0) {
+    return discoveredModels;
+  }
+
   const provider = getProviderById(providerId, appDefinition, options);
 
   if (!provider) {

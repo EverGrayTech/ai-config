@@ -82,23 +82,6 @@ export const builtInProviders: AIProviderDefinition[] = [
     supportsBYOK: true,
     helpText: 'Use your own OpenRouter key to access curated third-party models.',
     docsUrl: 'https://openrouter.ai/keys',
-    models: [
-      {
-        id: 'anthropic/claude-3.5-sonnet',
-        label: 'Claude 3.5 Sonnet via OpenRouter',
-        provider: 'openrouter',
-        capabilities: { text: true, reasoning: true, streaming: true },
-        costHint: 'high',
-        status: 'active',
-      },
-      {
-        id: 'openai/gpt-4o-mini',
-        label: 'GPT-4o Mini via OpenRouter',
-        provider: 'openrouter',
-        capabilities: { text: true, streaming: true },
-        costHint: 'medium',
-        status: 'active',
-      },
-    ],
+    models: [],
   },
 ];

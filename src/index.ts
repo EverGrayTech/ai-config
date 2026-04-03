@@ -28,6 +28,8 @@ export {
   type AIGenerationSettings,
   type AIModelCapabilities,
   type AIModelDescriptor,
+  type AIModelDiscoveryCacheEntry,
+  type AIModelDiscoveryContext,
   type AIPersistedConfigPayload,
   type AIProviderId,
   type AIUsagePresentation,
@@ -59,6 +61,7 @@ export {
   getProviderById,
   getProviderMap,
 } from './core/providers/registry';
+export { discoverAvailableModels, getDiscoveredModels } from './core/providers/discovery';
 export {
   LocalStorageAIConfigStorageAdapter,
   createLocalStorageAIConfigStorageAdapter,

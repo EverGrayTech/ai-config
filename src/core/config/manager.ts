@@ -269,9 +269,12 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
     }
   };
 
-  const assign = (nextState: AIConfigState): AIConfigState => {
+  const assign = (nextState: AIConfigState, options?: { persist?: boolean }): AIConfigState => {
     state = nextState;
     emit();
+    if (options?.persist ?? true) {
+      void saveAIConfig(storage, state);
+    }
     return state;
   };
 
@@ -346,14 +349,14 @@ export function createAIConfigManager(options: AIConfigManagerOptions): AIConfig
     },
     async load() {
       const loaded = await loadAIConfig(storage, options.appDefinition);
-      return assign(loaded);
+      return assign(loaded, { persist: false });
     },
     async save() {
       await saveAIConfig(storage, state);
     },
     async clearPersisted() {
       await clearAIConfig(storage);
-      assign(resetAIConfigState(options.appDefinition));
+      assign(resetAIConfigState(options.appDefinition), { persist: false });
     },
     async invoke(request) {
       flushPendingState((request as AIInvokeRequest & { __resolvedState?: AIConfigState }).__resolvedState);

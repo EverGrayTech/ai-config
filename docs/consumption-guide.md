@@ -82,6 +82,39 @@ const result = await validateCredential('openai', 'sk-example', appDefinition);
 console.log(result.status, manager.getState());
 ```
 
+## Advisory model discovery
+
+The package now supports provider-aware advisory model discovery without changing execution behavior.
+
+- use `discoverAvailableModels(provider, context?)` to fetch and cache model lists when supported
+- use `getAvailableModels(provider, ...)` to read discovered cached models synchronously when present
+- if discovery is unavailable or fails, `getAvailableModels(...)` falls back to the static/curated provider list
+- manual model entry remains allowed; discovery does **not** enforce model validity at invoke time
+
+```ts
+import {
+  discoverAvailableModels,
+  getAvailableModels,
+} from '@evergraytech/ai-config';
+
+await discoverAvailableModels('openrouter');
+
+const openRouterModels = getAvailableModels('openrouter');
+
+await discoverAvailableModels('openai', {
+  apiKey: 'sk-example',
+});
+
+const openAiModels = getAvailableModels('openai');
+```
+
+Current discovery posture:
+
+- OpenRouter: dynamic browser-side discovery via public endpoint
+- OpenAI: optional dynamic discovery when a user API key is supplied
+- Anthropic: curated advisory fallback list in this phase
+- Gemini: curated advisory fallback list in this phase
+
 ## Headless invocation usage
 
 The initial invocation surface is manager-based.

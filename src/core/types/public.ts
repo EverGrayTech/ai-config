@@ -22,6 +22,23 @@ export interface AIModelDescriptor {
   costHint?: 'low' | 'medium' | 'high';
   status?: 'active' | 'preview' | 'deprecated';
   disabled?: boolean;
+  metadata?: {
+    contextLength?: number;
+    pricing?: Record<string, unknown>;
+    raw?: unknown;
+  };
+}
+
+export interface AIModelDiscoveryContext {
+  apiKey?: string;
+  forceRefresh?: boolean;
+  signal?: AbortSignal;
+}
+
+export interface AIModelDiscoveryCacheEntry {
+  models: AIModelDescriptor[];
+  discoveredAt: number;
+  expiresAt: number;
 }
 
 export type AIValidationState = 'unknown' | 'valid' | 'invalid' | 'error';
