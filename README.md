@@ -62,8 +62,8 @@ Use the headless API from `@evergraytech/ai-config`, the optional React layer fr
 The headless layer now includes a thin package-owned invocation surface.
 
 - call `manager.invoke()` to route against the currently configured AI path
-- default hosted execution is expected to use an `@evergraytech/ai-gateway` adapter supplied through manager options
-- BYOK execution is expected to use a direct-provider client registry supplied through manager options
+- default hosted execution is expected to route through `@evergraytech/ai-gateway`
+- BYOK execution is expected to use the same `@evergraytech/ai-gateway` boundary using the explicit provider + model + credential request shape
 - successful invocations return normalized provenance metadata such as provider, model, output, execution path, and optional usage/labels
 - failed invocations return a structured error contract with normalized category/code/message/retryability fields
 
@@ -101,6 +101,29 @@ For categorized apps, the current packaged panel posture is:
 - category sections keep an enabled toggle in the header row
 - selecting the app-provided/default option inside a category keeps the category enabled while routing it back to hosted/default behavior
 - provider model availability is still sourced from the shared provider/model registry and discovery cache
+
+In the default non-categorized panel experience:
+
+- the primary provider choice is presented as one combined `AI Provider` selector
+- the app-provided/default option keeps a host-controlled label
+- provider/model controls stay hidden when app-provided mode is selected
+- generation settings remain available but are collapsed by default to reduce first-run clutter
+
+## Advisory model discovery
+
+The package supports provider-aware advisory model discovery without coupling discovery to execution.
+
+- call `discoverAvailableModels(provider, context?)` to fetch and cache supported provider model lists when available
+- call `getAvailableModels(provider)` to read discovered models synchronously when cached, with fallback to built-in curated lists
+- discovery is advisory only and does not block invoke
+- manual model entry remains allowed even when discovery data exists
+
+Current discovery posture:
+
+- OpenRouter: dynamic browser-safe discovery via public endpoint
+- OpenAI: optional authenticated discovery when a user API key is supplied
+- Anthropic: curated advisory fallback list in this phase
+- Gemini: curated advisory fallback list in this phase
 
 For local repo workflows and the in-repo demo harness, use [Development](docs/development.md).
 
