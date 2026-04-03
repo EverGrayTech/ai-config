@@ -41,6 +41,7 @@ type ValidationHarnessProps = {
   description: string;
   appDefinition: AIConfigAppDefinition;
   categoryOptions: string[];
+  categoryDescriptions?: Record<string, string>;
   gatewayConfig: DemoGatewayConfig;
 };
 
@@ -191,6 +192,7 @@ function ValidationHarness({
   description,
   appDefinition,
   categoryOptions,
+  categoryDescriptions,
   gatewayConfig,
 }: ValidationHarnessProps) {
   const logIdRef = useRef(0);
@@ -329,7 +331,7 @@ function ValidationHarness({
         <section className="demo-section-group" aria-label="Invocation controls">
           <div className="demo-section-heading">
             <h4>Invocation</h4>
-            <p>Choose the prompt and route to exercise the currently resolved configuration.</p>
+            <p>Select the route to validate, then invoke it with the current prompt.</p>
           </div>
           <div className="demo-invoke-controls">
             <label className="demo-field">
@@ -347,7 +349,9 @@ function ValidationHarness({
                   <option value="">Default route (no category)</option>
                   {categoryOptions.map((category) => (
                     <option key={category} value={category}>
-                      {category}
+                      {categoryDescriptions?.[category]
+                        ? `${category} — ${categoryDescriptions[category]}`
+                        : category}
                     </option>
                   ))}
                 </select>
@@ -355,28 +359,13 @@ function ValidationHarness({
             ) : null}
 
             <div className="demo-button-row">
-              <button type="button" onClick={() => invoke()} disabled={isInvoking}>
-                {categoryOptions.length > 0 ? 'Invoke default route' : 'Invoke'}
+              <button type="button" onClick={() => invoke(activeCategory || undefined)} disabled={isInvoking}>
+                {isInvoking
+                  ? 'Invoking…'
+                  : activeCategory
+                    ? `Invoke ${activeCategory}`
+                    : 'Invoke'}
               </button>
-              {categoryOptions.map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => invoke(category)}
-                  disabled={isInvoking}
-                >
-                  Invoke {category}
-                </button>
-              ))}
-              {categoryOptions.length > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => invoke(activeCategory || undefined)}
-                  disabled={isInvoking}
-                >
-                  Invoke selected option
-                </button>
-              ) : null}
             </div>
           </div>
         </section>
@@ -565,6 +554,10 @@ export function RouteValidationScreen() {
           description="Supports multiple categories allowing Provider/Model to be overridden for specific sets of operations."
           appDefinition={categorizedDefinition}
           categoryOptions={['evaluate', 'write']}
+          categoryDescriptions={{
+            evaluate: 'Used for validation and scoring tasks',
+            write: 'Used for generation-heavy drafting tasks',
+          }}
           gatewayConfig={gatewayConfig}
         />
       </div>

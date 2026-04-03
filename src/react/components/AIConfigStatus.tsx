@@ -2,16 +2,26 @@
 
 import React from 'react';
 
+import type { AIProviderId } from '../../index';
 import { useAIConfigState } from '../context/AIConfigContext';
 
-export function AIConfigStatus() {
+export interface AIConfigStatusProps {
+  provider?: AIProviderId | null;
+  model?: string | null;
+  visible?: boolean;
+}
+
+export function AIConfigStatus({ provider, model, visible = true }: AIConfigStatusProps = {}) {
   const state = useAIConfigState();
 
-  if (state.mode !== 'byok') {
+  if (!visible) {
     return null;
   }
 
-  if (!state.selectedProvider) {
+  const selectedProvider = provider ?? state.selectedProvider;
+  const selectedModel = model ?? state.selectedModel;
+
+  if (!selectedProvider) {
     return (
       <p className="eg-ai-config-status" data-eg-ai-config-status="warning" role="status">
         Select a provider to configure bring-your-own-key access.
@@ -19,7 +29,7 @@ export function AIConfigStatus() {
     );
   }
 
-  const credential = state.credentials[state.selectedProvider];
+  const credential = state.credentials[selectedProvider];
   const hasCredential = Boolean(credential?.isPresent && credential.apiKey);
 
   if (!hasCredential) {
@@ -30,7 +40,7 @@ export function AIConfigStatus() {
     );
   }
 
-  if (!state.selectedModel) {
+  if (!selectedModel) {
     return (
       <p className="eg-ai-config-status" data-eg-ai-config-status="warning" role="alert">
         Select a model before invoking this provider.

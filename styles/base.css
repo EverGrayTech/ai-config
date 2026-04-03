@@ -47,6 +47,75 @@
   min-width: 0;
 }
 
+.eg-ai-config-route-card,
+.eg-ai-config-route-section {
+  padding: var(--spacing-md, 0.75rem);
+  border: 1px solid var(--eg-ai-muted-border);
+  border-radius: var(--eg-ai-radius);
+  background: color-mix(in srgb, var(--eg-ai-bg) 82%, white 3%);
+}
+
+.eg-ai-config-route-card-default {
+  border-color: color-mix(in srgb, var(--eg-ai-focus) 32%, var(--eg-ai-muted-border));
+}
+
+.eg-ai-config-route-card-header {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.eg-ai-config-route-card-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: var(--eg-ai-font-size);
+  line-height: var(--eg-ai-line-height);
+}
+
+.eg-ai-config-route-card-title-row strong {
+  font-weight: var(--eg-ai-font-weight-strong);
+}
+
+.eg-ai-config-route-card-title-row span,
+.eg-ai-config-route-summary-description,
+.eg-ai-config-route-inheritance {
+  color: color-mix(in srgb, var(--eg-ai-text) 72%, transparent);
+}
+
+.eg-ai-config-route-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.eg-ai-config-route-summary::-webkit-details-marker {
+  display: none;
+}
+
+.eg-ai-config-route-summary-copy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.eg-ai-config-route-summary-title {
+  font-weight: var(--eg-ai-font-weight-strong);
+}
+
+.eg-ai-config-route-toggle {
+  flex-shrink: 0;
+}
+
+.eg-ai-config-route-inheritance {
+  margin: 0;
+  font-size: var(--eg-ai-font-size);
+}
+
 .eg-ai-config-field {
   display: grid;
   gap: var(--eg-ai-field-gap);

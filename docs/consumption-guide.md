@@ -198,6 +198,8 @@ In the packaged React UI:
 - apps with categories show Default controls plus one collapsible section per category
 - category overrides start disabled and inherit Default until explicitly enabled
 - advanced generation controls are collapsed by default to reduce clutter
+- the repeated section headers use inline `Name — Description` labeling for quick orientation
+- selecting the app-provided/default option inside a category keeps that category enabled while switching it back to hosted/default behavior
 
 When a collapsed generation section contains non-default values, the panel surfaces a short summary so users can see that a route differs without opening every section.
 

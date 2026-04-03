@@ -93,6 +93,15 @@ The optional React layer is browser/client-first.
 - embed `AIConfigPanel` inside existing settings layouts by default, or opt into package framing with `framed`
 - use exported hooks such as `useAIConfigState()` when host-owned UI needs to read current AI config outside the packaged panel
 
+For categorized apps, the current packaged panel posture is:
+
+- the panel reuses the same core AI-parameter control stack across uncategorized and categorized layouts
+- categorized panels render one **Default** section plus one section per declared category
+- section headers surface inline `Name — Description` copy for quick orientation
+- category sections keep an enabled toggle in the header row
+- selecting the app-provided/default option inside a category keeps the category enabled while routing it back to hosted/default behavior
+- provider model availability is still sourced from the shared provider/model registry and discovery cache
+
 For local repo workflows and the in-repo demo harness, use [Development](docs/development.md).
 
 ## Local-first credential caveat

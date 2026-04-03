@@ -2,15 +2,20 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { redactCredential } from '../../index';
+import { redactCredential, type AIProviderId } from '../../index';
 import { useAIConfigActions, useAIConfigState } from '../context/AIConfigContext';
 
-export function AIApiKeyField() {
+export interface AIApiKeyFieldProps {
+  provider?: AIProviderId | null;
+  visible?: boolean;
+}
+
+export function AIApiKeyField({ provider, visible = true }: AIApiKeyFieldProps = {}) {
   const state = useAIConfigState();
   const actions = useAIConfigActions();
   const [value, setValue] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const selectedProvider = state.selectedProvider;
+  const selectedProvider = provider ?? state.selectedProvider;
   const credential = selectedProvider ? state.credentials[selectedProvider] : undefined;
   const savedValue = credential?.apiKey;
   const hasSavedKey = Boolean(credential?.isPresent && savedValue);
@@ -47,7 +52,7 @@ export function AIApiKeyField() {
     }, 400);
   };
 
-  if (!selectedProvider || state.mode !== 'byok') {
+  if (!visible || !selectedProvider) {
     return null;
   }
 

@@ -65,6 +65,14 @@ The demo app is organized to make future component validation straightforward:
 
 When adding new components, prefer extending the gallery and state-scenarios screens rather than creating ad hoc demo pages.
 
+Current categorized-panel validation posture:
+
+- categorized validation now uses the same core AI-parameter control stack shape as the uncategorized panel, repeated per section
+- the categorized view renders a **Default** section plus one section per declared category
+- section headers surface inline `Name — Description` copy for fast scanning
+- selecting the app-provided/default option inside a category should keep that category enabled while returning it to hosted/default behavior
+- provider/model availability issues in categorized sections should be evaluated against each section's own effective route state, while provider model discovery data may remain shared/cached across sections
+
 ### Hosted gateway validation setup
 
 The route-validation screen can call a deployed `ai-gateway` instance.

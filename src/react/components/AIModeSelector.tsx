@@ -11,7 +11,11 @@ import {
 } from '../context/AIConfigContext';
 import { useAvailableProviders } from '../hooks/useAvailableProviders';
 
-export function AIModeSelector() {
+export interface AIModeSelectorProps {
+  routeKey?: 'default' | string;
+}
+
+export function AIModeSelector({ routeKey = 'default' }: AIModeSelectorProps = {}) {
   const state = useAIConfigState();
   const actions = useAIConfigActions();
   const appDefinition = useAIConfigAppDefinition();
@@ -21,7 +25,15 @@ export function AIModeSelector() {
   const providerOptions = [...providers].sort((left, right) =>
     left.label.localeCompare(right.label),
   );
-  const selectedValue = state.mode === 'default' ? 'default' : (state.selectedProvider ?? '');
+  const categoryRoute = routeKey === 'default' ? null : state.routes?.categories?.[routeKey];
+  const selectedValue =
+    routeKey === 'default'
+      ? state.mode === 'default'
+        ? 'default'
+        : (state.selectedProvider ?? '')
+      : !categoryRoute?.enabled || categoryRoute.provider == null || categoryRoute.provider === 'hosted'
+        ? 'default'
+        : categoryRoute.provider;
 
   return (
     <label
@@ -36,13 +48,25 @@ export function AIModeSelector() {
         onChange={(event) => {
           const nextValue = event.target.value;
 
-          if (nextValue === 'default') {
+          if (routeKey === 'default' && nextValue === 'default') {
             actions.setMode('default');
             return;
           }
 
-          actions.setMode('byok');
-          actions.setProvider((nextValue as AIProviderId) || null);
+          if (routeKey === 'default') {
+            actions.setMode('byok');
+            actions.setProvider((nextValue as AIProviderId) || null);
+            return;
+          }
+
+          if (nextValue === 'default') {
+            actions.setCategoryEnabled(routeKey, true);
+            actions.setRouteProvider(routeKey, 'hosted');
+            return;
+          }
+
+          actions.setCategoryEnabled(routeKey, true);
+          actions.setRouteProvider(routeKey, (nextValue as AIProviderId) || null);
         }}
       >
         <option value="default">{defaultLabel}</option>
