@@ -12,17 +12,6 @@ type DemoScreenId = 'overview' | 'gallery' | 'states';
 
 const appDefinition: AIConfigAppDefinition = {
   appId: 'ai-config-demo-app',
-  defaultMode: {
-    enabled: true,
-    label: 'Free Trial',
-    provider: 'hosted',
-    model: 'hosted-model',
-    usageHint: 'Demo free mode with app-provided access.',
-  },
-  byok: {
-    enabled: true,
-    providers: ['anthropic', 'gemini', 'openai', 'openrouter'],
-  },
   defaultGeneration: {
     temperature: 0.4,
     maxOutputTokens: 600,

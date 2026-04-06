@@ -471,16 +471,6 @@ export function RouteValidationScreen() {
   const defaultOnlyDefinition = useMemo<AIConfigAppDefinition>(
     () => ({
       appId: 'ai-config-demo-default-only',
-      defaultMode: {
-        enabled: true,
-        label: 'Free Trial',
-        provider: 'hosted',
-        usageHint: 'Default-only validation flow for hosted routing.',
-      },
-      byok: {
-        enabled: true,
-        providers: ['anthropic', 'gemini', 'openai', 'openrouter'],
-      },
       defaultGeneration: {
         temperature: 0.4,
         maxOutputTokens: 600,
@@ -492,16 +482,6 @@ export function RouteValidationScreen() {
   const categorizedDefinition = useMemo<AIConfigAppDefinition>(
     () => ({
       appId: 'ai-config-demo-categorized',
-      defaultMode: {
-        enabled: true,
-        label: 'Free Trial',
-        provider: 'hosted',
-        usageHint: 'Categorized validation flow for route overrides.',
-      },
-      byok: {
-        enabled: true,
-        providers: ['anthropic', 'gemini', 'openai', 'openrouter'],
-      },
       defaultGeneration: {
         temperature: 0.4,
         maxOutputTokens: 600,

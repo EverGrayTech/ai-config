@@ -71,17 +71,6 @@ import {
 
 const appDefinition: AIConfigAppDefinition = {
   appId: 'plot-your-path',
-  defaultMode: {
-    enabled: true,
-    label: 'EverGray Tech default AI',
-    provider: 'hosted',
-    model: 'evergray-tech-default',
-    usageHint: 'Free usage is limited by the host app.',
-  },
-  byok: {
-    enabled: true,
-    providers: ['openai', 'anthropic'],
-  },
 };
 
 const manager = createAIConfigManager({ appDefinition });
@@ -135,16 +124,6 @@ import { createAIConfigManager, type AIConfigAppDefinition } from '@evergraytech
 
 const appDefinition: AIConfigAppDefinition = {
   appId: 'plot-your-path',
-  defaultMode: {
-    enabled: true,
-    label: 'EverGray hosted AI',
-    provider: 'hosted',
-    model: 'gpt-4o-mini',
-  },
-  byok: {
-    enabled: true,
-    providers: ['openai'],
-  },
 };
 
 const manager = createAIConfigManager({
@@ -186,16 +165,6 @@ import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
 
 const appDefinition: AIConfigAppDefinition = {
   appId: 'plot-your-path',
-  defaultMode: {
-    enabled: true,
-    label: 'EverGray hosted AI',
-    provider: 'hosted',
-    model: 'gpt-4o-mini',
-  },
-  byok: {
-    enabled: true,
-    providers: ['openai', 'anthropic'],
-  },
   operationCategories: [
     { key: 'evaluate', label: 'Evaluate' },
     { key: 'write', label: 'Write' },
@@ -299,16 +268,6 @@ import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
 
 const appDefinition: AIConfigAppDefinition = {
   appId: 'design-system-demo',
-  defaultMode: {
-    enabled: true,
-    label: 'App-provided AI',
-    provider: 'hosted',
-    model: 'evergray-default',
-  },
-  byok: {
-    enabled: true,
-    providers: ['openai', 'anthropic'],
-  },
 };
 
 export function AISettingsCard() {
@@ -341,16 +300,6 @@ import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
 
 const categorizedDefinition: AIConfigAppDefinition = {
   appId: 'design-system-demo',
-  defaultMode: {
-    enabled: true,
-    label: 'App-provided AI',
-    provider: 'hosted',
-    model: 'evergray-default',
-  },
-  byok: {
-    enabled: true,
-    providers: ['openai', 'anthropic'],
-  },
   operationCategories: [
     { key: 'evaluate', label: 'Evaluation' },
     { key: 'write', label: 'Writing' },
@@ -425,6 +374,12 @@ Then import ai-config’s stylesheet as normal.
 This package does **not** import or depend on `@evergraytech/design-system`; the bridge is CSS-variable-based only.
 
 ## Host-app customization
+
+`defaultMode` and `byok` are optional. Omit them when your app is using the package defaults.
+
+Provide `defaultMode` only when you need to override hosted/default behavior for a specific app, such as changing availability or messaging. Accepted keys include `enabled`, `label`, `provider`, `model`, and `usageHint`.
+
+Provide `byok` only when you need to override BYOK behavior for a specific app, such as changing availability or constraining the allowed providers. Accepted keys include `enabled` and `providers`.
 
 Host apps can control:
 

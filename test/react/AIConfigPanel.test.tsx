@@ -235,7 +235,7 @@ describe('AIConfigPanel', () => {
       </AIConfigProvider>,
     );
 
-    expect(screen.getByText('App-provided AI')).toBeInTheDocument();
+    expect(screen.getByText('Free Trial')).toBeInTheDocument();
 
     const reasoningSelect = screen.getByLabelText('Reasoning preset');
     await user.selectOptions(reasoningSelect, 'high');

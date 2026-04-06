@@ -20,7 +20,7 @@ export function AIModeSelector({ routeKey = 'default' }: AIModeSelectorProps = {
   const actions = useAIConfigActions();
   const appDefinition = useAIConfigAppDefinition();
   const providers = useAvailableProviders();
-  const defaultLabel = appDefinition.defaultMode?.label ?? 'App-provided AI';
+  const defaultLabel = appDefinition.defaultMode?.label ?? 'Free Trial';
 
   const providerOptions = [...providers].sort((left, right) =>
     left.label.localeCompare(right.label),

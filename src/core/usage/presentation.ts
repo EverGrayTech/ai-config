@@ -12,7 +12,7 @@ export function getAIUsagePresentation(
 ): AIUsagePresentation {
   if (state.mode === 'default') {
     return {
-      modeLabel: appDefinition?.defaultMode?.label ?? 'App-provided AI',
+      modeLabel: appDefinition?.defaultMode?.label ?? 'Free Trial',
       usageHint:
         appDefinition?.defaultMode?.usageHint ?? appDefinition?.usagePresentation?.freeTierHint,
       freeTierHint: appDefinition?.usagePresentation?.freeTierHint,
