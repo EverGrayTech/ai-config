@@ -1,6 +1,6 @@
 {
   "name": "@evergraytech/ai-config",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Local-first AI configuration layer enabling zero-setup defaults and optional bring-your-own-key model access across providers",
   "license": "Apache-2.0",
   "type": "module",

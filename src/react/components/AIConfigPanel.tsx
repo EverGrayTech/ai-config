@@ -86,33 +86,24 @@ function AIAssignedParameters({
   const route = routeKey === 'default' ? null : state.routes?.categories?.[routeKey];
   const provider = resolveRouteProvider(state, routeKey);
   const model = resolveRouteModel(state, routeKey);
-  const showByokFields = routeKey === 'default' ? provider != null : route?.enabled;
+  const showByokFields = provider != null;
 
   const routeLabel = label ?? 'Route';
   const routeControlLabel = routeKey === 'default' ? routeLabel : routeKey;
 
   return (
-    <>
+    <div className="eg-ai-config-route-controls">
       <AIModeSelector routeKey={routeKey} />
       <AIApiKeyField provider={provider} visible={showByokFields} />
       {showByokFields ? (
         <>
-          {routeKey !== 'default' ? (
-            <AIProviderSelector
-              routeKey={routeKey}
-              label={`${routeControlLabel} provider`}
-              ariaLabel={`${routeControlLabel} provider`}
-            />
-          ) : null}
-          {routeKey !== 'default' || provider != null ? (
-            <AIModelSelector
-              routeKey={routeKey}
-              label={routeKey === 'default' ? (label ?? 'Model') : `${routeControlLabel} model`}
-              ariaLabel={
-                routeKey === 'default' ? (label ?? 'AI model') : `${routeControlLabel} model`
-              }
-            />
-          ) : null}
+          <AIModelSelector
+            routeKey={routeKey}
+            label={routeKey === 'default' ? (label ?? 'Model') : `${routeControlLabel} model`}
+            ariaLabel={
+              routeKey === 'default' ? (label ?? 'AI model') : `${routeControlLabel} model`
+            }
+          />
         </>
       ) : null}
       <AIConfigStatus provider={provider} model={model} visible={showByokFields} />
@@ -120,9 +111,9 @@ function AIAssignedParameters({
         routeKey={routeKey}
         collapsible
         defaultOpen={false}
-        title={routeKey === 'default' ? 'Generation settings' : `${routeLabel} generation settings`}
+        title="Generation settings"
       />
-    </>
+    </div>
   );
 }
 

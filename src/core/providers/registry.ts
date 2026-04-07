@@ -51,12 +51,23 @@ export function getAvailableProviders(
 
   const enabledProviders = new Set<AIProviderId>();
 
+  if (appDefinition?.defaultMode?.enabled !== false) {
+    enabledProviders.add('hosted');
+  }
+
   if (appDefinition?.defaultMode?.provider) {
     enabledProviders.add(appDefinition.defaultMode.provider);
   }
 
-  for (const provider of appDefinition?.byok?.providers ?? []) {
-    enabledProviders.add(provider);
+  if (appDefinition?.byok?.enabled !== false) {
+    for (const provider of appDefinition?.byok?.providers ?? [
+      'openai',
+      'anthropic',
+      'gemini',
+      'openrouter',
+    ]) {
+      enabledProviders.add(provider);
+    }
   }
 
   const filtered = enabledProviders.size

@@ -1,17 +1,21 @@
-import { render, screen } from '@testing-library/react';
-import { within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { type AIConfigAppDefinition, createAIConfigManager } from '../../src';
 import {
   AIConfigPanel,
   AIConfigProvider,
+  AIConfigSettingsHeader,
+  AIConfigSettingsSurface,
+  AIConfigSetupRequired,
   AIConfigStatus,
   AICredentialStatus,
   AIGenerationSettingsForm,
+  AIProviderSelector,
   AIUsageHint,
   useAIConfig,
   useAIConfigActions,
@@ -406,9 +410,10 @@ describe('AIConfigPanel', () => {
     await user.click(screen.getAllByText('Evaluate')[0]);
     await user.click(within(evaluateSection).getByLabelText('Enable category override'));
 
-    expect(screen.getByLabelText('evaluate provider')).toBeInTheDocument();
-    expect(screen.getByLabelText('evaluate model')).toBeInTheDocument();
-    expect(screen.getByText('Model generation settings')).toBeInTheDocument();
+    expect(screen.getAllByLabelText('AI Provider')[1]).toHaveValue('default');
+    expect(screen.queryByLabelText('evaluate provider')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('evaluate model')).not.toBeInTheDocument();
+    expect(within(evaluateSection).getByText('Generation settings')).toBeInTheDocument();
   });
 
   it('updates category-specific provider, model, and generation settings', async () => {
@@ -441,5 +446,243 @@ describe('AIConfigPanel', () => {
     expect(stateText).toContain('"provider":"openai"');
     expect(stateText).toContain('"model":"gpt-4.1-mini"');
     expect(stateText).toContain('"temperature":1.1');
+  });
+
+  it('keeps category override enabled and hides provider/model-specific controls when Free Trial is selected', async () => {
+    const user = userEvent.setup();
+    const categorizedAppDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+    };
+
+    render(
+      <AIConfigProvider appDefinition={categorizedAppDefinition} loadOnMount={false}>
+        <AIConfigPanel />
+        <StateProbe />
+      </AIConfigProvider>,
+    );
+
+    await user.click(screen.getByText('Evaluate'));
+    await user.click(screen.getByLabelText('Enable category override'));
+
+    const categoryProviderSelect = screen.getAllByLabelText('AI Provider')[1];
+    expect(categoryProviderSelect).toHaveValue('default');
+    expect(screen.queryByLabelText('evaluate provider')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('evaluate model')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('API key')).not.toBeInTheDocument();
+
+    await user.selectOptions(categoryProviderSelect, 'openai');
+    expect(screen.getByLabelText('evaluate model')).toBeInTheDocument();
+
+    await user.selectOptions(screen.getAllByLabelText('AI Provider')[1], 'default');
+
+    const stateText = screen.getByTestId('state-probe').textContent ?? '';
+    expect(stateText).toContain('"evaluate":{"enabled":true');
+    expect(stateText).toContain('"provider":"hosted"');
+    expect(screen.getAllByLabelText('AI Provider')[1]).toHaveValue('default');
+    expect(screen.queryByLabelText('evaluate provider')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('evaluate model')).not.toBeInTheDocument();
+  });
+
+  it('allows provider selection with package defaults when appDefinition omits defaultMode and byok', async () => {
+    const user = userEvent.setup();
+    const minimalDefinition: AIConfigAppDefinition = {
+      appId: 'minimal-defaults-test',
+      operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+    };
+
+    render(
+      <AIConfigProvider appDefinition={minimalDefinition} loadOnMount={false}>
+        <AIConfigPanel />
+        <StateProbe />
+      </AIConfigProvider>,
+    );
+
+    await user.selectOptions(screen.getByLabelText('AI Provider'), 'openai');
+    expect(screen.getByLabelText('AI Provider')).toHaveValue('openai');
+    expect(screen.getByRole('option', { name: 'OpenRouter' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Model')).toBeInTheDocument();
+
+    await user.click(screen.getByText('Evaluate'));
+    await user.click(screen.getByLabelText('Enable category override'));
+    await user.selectOptions(screen.getAllByLabelText('AI Provider')[1], 'openai');
+
+    const stateText = screen.getByTestId('state-probe').textContent ?? '';
+    expect(stateText).toContain('"selectedProvider":"openai"');
+    expect(stateText).toContain('"evaluate":{"enabled":true,"provider":"openai"');
+    expect(screen.getAllByLabelText('AI Provider')[1]).toHaveValue('openai');
+  });
+
+  it('renders settings header defaults and custom copy', () => {
+    const { rerender } = render(<AIConfigSettingsHeader />);
+
+    expect(screen.getByText('AI settings')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Choose whether to use app-provided AI or configure your own provider and model.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'AI settings' })).toBeInTheDocument();
+
+    rerender(<AIConfigSettingsHeader title="Custom title" description="Custom description" />);
+
+    expect(screen.getByText('Custom title')).toBeInTheDocument();
+    expect(screen.getByText('Custom description')).toBeInTheDocument();
+  });
+
+  it('renders setup required messaging for missing hosted configuration states', () => {
+    const { rerender } = render(
+      <AIConfigSetupRequired
+        requirement={{
+          appId: 'demo-app',
+          missingClientId: true,
+          missingGatewayClient: true,
+        }}
+      />,
+    );
+
+    expect(screen.getByLabelText('AI setup required')).toBeInTheDocument();
+    expect(
+      screen.getByText('Missing configuration: client ID and gateway client.'),
+    ).toBeInTheDocument();
+
+    rerender(
+      <AIConfigSetupRequired
+        requirement={{
+          appId: 'demo-app',
+          missingClientId: true,
+          missingGatewayClient: false,
+        }}
+        config={{ clientIdLabel: 'App client ID', clientIdValue: 'evergray-demo' }}
+      />,
+    );
+
+    expect(screen.getByText('Missing configuration: App client ID.')).toBeInTheDocument();
+    expect(screen.getByText('Expected App client ID:')).toBeInTheDocument();
+    expect(screen.getByText('evergray-demo')).toBeInTheDocument();
+
+    rerender(
+      <AIConfigSetupRequired
+        requirement={{
+          appId: 'demo-app',
+          missingClientId: false,
+          missingGatewayClient: false,
+        }}
+      />,
+    );
+
+    expect(screen.queryByLabelText('AI setup required')).not.toBeInTheDocument();
+  });
+
+  it('renders settings surface with setup-required and panel states', () => {
+    const { rerender } = render(
+      <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+        <AIConfigSettingsSurface
+          framed
+          title="Surface title"
+          description="Surface description"
+          setupMessageConfig={{
+            clientIdLabel: 'Hosted client ID',
+            gatewayLabel: 'Hosted gateway',
+            clientIdValue: 'surface-app',
+          }}
+        />
+      </AIConfigProvider>,
+    );
+
+    const surface = screen.getByLabelText('AI settings');
+    expect(surface).toHaveAttribute('data-eg-ai-config-surface', 'true');
+    expect(surface).toHaveAttribute('data-eg-ai-config-framed', 'true');
+    expect(screen.getByText('Surface title')).toBeInTheDocument();
+    expect(screen.getByText('Surface description')).toBeInTheDocument();
+    expect(screen.getByLabelText('AI setup required')).toBeInTheDocument();
+    expect(
+      screen.getByText('Missing configuration: Hosted client ID and Hosted gateway.'),
+    ).toBeInTheDocument();
+
+    rerender(
+      <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+        <AIConfigSettingsSurface
+          managerOptions={{
+            hostedGateway: {
+              clientId: 'client',
+              gateway: {
+                authenticate: async () => ({ ok: true, token: 'token', expiresAt: '2099-01-01' }),
+                invoke: async () => ({
+                  ok: true,
+                  provider: 'hosted',
+                  model: 'hosted-model',
+                  output: 'ok',
+                  executionPath: 'hosted',
+                }),
+              },
+            },
+          }}
+        />
+      </AIConfigProvider>,
+    );
+
+    expect(screen.queryByLabelText('AI setup required')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('AI configuration panel')).toBeInTheDocument();
+  });
+
+  it('renders provider selector defaults and updates default plus route providers', async () => {
+    const user = userEvent.setup();
+    const categorizedAppDefinition: AIConfigAppDefinition = {
+      ...appDefinition,
+      operationCategories: [{ key: 'evaluate', label: 'Evaluate' }],
+    };
+
+    const byokManager = createAIConfigManager({ appDefinition: categorizedAppDefinition });
+    byokManager.setMode('byok');
+
+    const { rerender } = render(
+      <AIConfigProvider appDefinition={categorizedAppDefinition} loadOnMount={false}>
+        <AIProviderSelector />
+        <StateProbe />
+      </AIConfigProvider>,
+    );
+
+    expect(screen.getByLabelText('AI provider')).toBeInTheDocument();
+    expect(screen.getByText('Provider')).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Select a provider' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'OpenAI' })).toBeInTheDocument();
+
+    rerender(
+      <AIConfigProvider
+        appDefinition={categorizedAppDefinition}
+        manager={byokManager}
+        loadOnMount={false}
+      >
+        <AIProviderSelector />
+        <StateProbe />
+      </AIConfigProvider>,
+    );
+
+    await user.selectOptions(screen.getByLabelText('AI provider'), 'openai');
+    expect(screen.getByTestId('state-probe').textContent).toContain('"selectedProvider":"openai"');
+
+    rerender(
+      <AIConfigProvider
+        appDefinition={categorizedAppDefinition}
+        manager={byokManager}
+        loadOnMount={false}
+      >
+        <AIProviderSelector
+          routeKey="evaluate"
+          label="Category provider"
+          ariaLabel="category provider"
+        />
+        <StateProbe />
+      </AIConfigProvider>,
+    );
+
+    const categorySelect = screen.getByLabelText('category provider');
+    expect(categorySelect).toHaveValue('');
+
+    await user.selectOptions(categorySelect, 'anthropic');
+
+    const stateText = screen.getByTestId('state-probe').textContent ?? '';
+    expect(stateText).toContain('"evaluate":{"enabled":false,"provider":"anthropic"');
   });
 });

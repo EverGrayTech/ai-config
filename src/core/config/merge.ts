@@ -122,12 +122,23 @@ function getLegacyRouteFromState(
 function getAllowedProviders(appDefinition: AIConfigAppDefinition): Set<AIProviderId> {
   const providers = new Set<AIProviderId>();
 
+  if (appDefinition.defaultMode?.enabled !== false) {
+    providers.add('hosted');
+  }
+
   if (appDefinition.defaultMode?.enabled && appDefinition.defaultMode.provider) {
     providers.add(appDefinition.defaultMode.provider);
   }
 
-  for (const provider of appDefinition.byok?.providers ?? []) {
-    providers.add(provider);
+  if (appDefinition.byok?.enabled !== false) {
+    for (const provider of appDefinition.byok?.providers ?? [
+      'openai',
+      'anthropic',
+      'gemini',
+      'openrouter',
+    ]) {
+      providers.add(provider);
+    }
   }
 
   return providers;

@@ -98,6 +98,19 @@
   background: color-mix(in srgb, var(--eg-ai-bg) 82%, white 3%);
 }
 
+.eg-ai-config-route-section > :not(summary) {
+  margin-top: var(--eg-ai-section-gap);
+}
+
+.eg-ai-config-route-section > :not(summary) + :not(summary) {
+  margin-top: 0;
+}
+
+.eg-ai-config-route-controls {
+  display: grid;
+  gap: var(--eg-ai-section-gap);
+}
+
 .eg-ai-config-route-card-default {
   border-color: color-mix(in srgb, var(--eg-ai-focus) 32%, var(--eg-ai-muted-border));
 }
