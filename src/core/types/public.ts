@@ -298,6 +298,18 @@ export interface AIConfigManagerOptions {
   hostedGateway?: AIHostedGatewayOptions;
 }
 
+export interface AIConfigSetupRequirementDetails {
+  appId: string;
+  missingClientId: boolean;
+  missingGatewayClient: boolean;
+}
+
+export interface AIConfigSetupMessageConfig {
+  clientIdLabel?: string;
+  clientIdValue?: string;
+  gatewayLabel?: string;
+}
+
 export interface AIConfigChangeEvent {
   nextState: AIConfigState;
 }

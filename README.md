@@ -103,6 +103,7 @@ The optional React layer is browser/client-first.
 - render `AIConfigProvider` and React consumers inside a client component boundary
 - import `@evergraytech/ai-config/styles/base.css` anywhere the packaged UI is used
 - expect persisted settings to load from `localStorage` after client mount
+- prefer `AIConfigSettingsSurface` as the direct-use assembled settings UI when the package should own title/description/setup messaging
 - embed `AIConfigPanel` inside existing settings layouts by default, or opt into package framing with `framed`
 - use exported hooks such as `useAIConfigState()` when host-owned UI needs to read current AI config outside the packaged panel
 

@@ -7,6 +7,8 @@ export {
   type AIDirectProviderRegistry,
   type AIConfigManager,
   type AIConfigManagerOptions,
+  type AIConfigSetupMessageConfig,
+  type AIConfigSetupRequirementDetails,
   type AIConfigMode,
   type AIConfigState,
   type AIHostedAuthRequest,

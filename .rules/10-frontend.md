@@ -3,7 +3,7 @@
 ## Technology Stack
 - **Framework**: Next.js 15+
 - **Package Manager**: pnpm (always use `pnpm` for all operations)
-- **Linting/Formatting**: Biome (`pnpm biome check --apply`)
+- **Linting/Formatting**: Biome (`pnpm biome check --write`)
 
 ## React Best Practices
 - **React Compiler**: Do NOT manually use `useMemo` or `useCallback`

@@ -31,6 +31,49 @@
   font-family: var(--eg-ai-font-family);
 }
 
+.eg-ai-config-settings-surface {
+  display: grid;
+  gap: var(--eg-ai-panel-gap);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.eg-ai-config-settings-surface[data-eg-ai-config-framed="true"] {
+  padding: var(--spacing-lg, 1rem);
+  border: 1px solid var(--eg-ai-border);
+  border-radius: var(--eg-ai-radius);
+  background: var(--eg-ai-bg);
+}
+
+.eg-ai-config-settings-header,
+.eg-ai-config-setup-required {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.eg-ai-config-settings-title,
+.eg-ai-config-setup-required-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: var(--eg-ai-font-weight-strong);
+}
+
+.eg-ai-config-settings-description,
+.eg-ai-config-setup-required-description {
+  margin: 0;
+  color: color-mix(in srgb, var(--eg-ai-text) 78%, transparent);
+  font-size: var(--eg-ai-font-size);
+  line-height: var(--eg-ai-line-height);
+}
+
+.eg-ai-config-setup-required {
+  padding: var(--spacing-md, 0.75rem);
+  border: 1px solid var(--eg-ai-muted-border);
+  border-radius: var(--eg-ai-radius);
+  background: color-mix(in srgb, var(--eg-ai-bg) 88%, white 2%);
+}
+
 .eg-ai-config-panel[data-eg-ai-config-framed="true"] {
   padding: var(--spacing-lg, 1rem);
   border: 1px solid var(--eg-ai-border);

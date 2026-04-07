@@ -260,7 +260,7 @@ The packaged React layer is intended for client-rendered browser settings UI.
 
 import '@evergraytech/ai-config/styles/base.css';
 import {
-  AIConfigPanel,
+  AIConfigSettingsSurface,
   AIConfigProvider,
   useAIConfigState,
 } from '@evergraytech/ai-config/react';
@@ -273,11 +273,7 @@ const appDefinition: AIConfigAppDefinition = {
 export function AISettingsCard() {
   return (
     <AIConfigProvider appDefinition={appDefinition}>
-      <section>
-        <h2>AI settings</h2>
-        <p>Choose whether to use app-provided AI or your own provider key.</p>
-        <AIConfigPanel />
-      </section>
+      <AIConfigSettingsSurface />
     </AIConfigProvider>
   );
 }
@@ -295,7 +291,7 @@ Categorized apps can keep the same top-level panel while exposing route-specific
 'use client';
 
 import '@evergraytech/ai-config/styles/base.css';
-import { AIConfigPanel, AIConfigProvider } from '@evergraytech/ai-config/react';
+import { AIConfigProvider, AIConfigSettingsSurface } from '@evergraytech/ai-config/react';
 import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
 
 const categorizedDefinition: AIConfigAppDefinition = {
@@ -309,7 +305,59 @@ const categorizedDefinition: AIConfigAppDefinition = {
 export function CategorizedAISettingsCard() {
   return (
     <AIConfigProvider appDefinition={categorizedDefinition}>
-      <AIConfigPanel />
+      <AIConfigSettingsSurface />
+    </AIConfigProvider>
+  );
+}
+```
+
+## Direct settings-page usage
+
+`AIConfigSettingsSurface` is now the preferred assembled React surface for direct settings-page consumption.
+
+- it renders the package-owned title/description block
+- it renders the package-owned setup-required state when hosted configuration is missing
+- it renders the main AI configuration controls when setup is complete
+- it is designed to drop into a host settings route without requiring an app-local wrapper component just to add headings or setup messaging
+
+Example wrapper-removal posture:
+
+```tsx
+'use client';
+
+import '@evergraytech/ai-config/styles/base.css';
+import { AIConfigProvider, AIConfigSettingsSurface } from '@evergraytech/ai-config/react';
+import type { AIConfigAppDefinition } from '@evergraytech/ai-config';
+
+const appDefinition: AIConfigAppDefinition = {
+  appId: 'plot-your-path',
+};
+
+export function SettingsPageAISection() {
+  return (
+    <AIConfigProvider
+      appDefinition={appDefinition}
+      managerOptions={{
+        hostedGateway: {
+          clientId: 'plot-your-path-web',
+          gateway: {
+            authenticate: async () => ({ token: 'example-token' }),
+            invoke: async () => ({
+              provider: 'openai',
+              model: 'gpt-4o-mini',
+              output: 'Example output',
+            }),
+          },
+        },
+      }}
+    >
+      <AIConfigSettingsSurface
+        setupMessageConfig={{
+          clientIdLabel: 'gateway client ID',
+          clientIdValue: 'plot-your-path-web',
+          gatewayLabel: 'hosted gateway adapter',
+        }}
+      />
     </AIConfigProvider>
   );
 }
@@ -322,7 +370,22 @@ export function CategorizedAISettingsCard() {
 - Host apps can render their own headings, trust-model copy, and adjacent settings sections before or after the panel.
 - By default, `AIConfigPanel` is layout-neutral and does not add card framing.
 - If a host wants package-provided framing for a standalone presentation, it can render `<AIConfigPanel framed />`.
-- Host apps that need more control can compose lower-level exported components or use the headless layer directly.
+- Host apps that need more control can compose lower-level exported components such as `AIConfigSettingsHeader`, `AIConfigSetupRequired`, and `AIConfigPanel`, or use the headless layer directly.
+
+Use `AIConfigSettingsSurface` when you want the package’s preferred assembled settings experience.
+Use `AIConfigPanel` when the host intentionally owns surrounding headings, descriptions, or setup-state placement.
+
+## Migration notes for wrapper-based consumers
+
+If a downstream app currently has a wrapper like `src/components/settings/AISettingsPanel.tsx`, the expected migration is:
+
+1. keep route-level page placement in the app
+2. keep `AIConfigProvider`
+3. replace the local wrapper body with `AIConfigSettingsSurface`
+4. delete app-owned setup-required messaging for missing hosted config when it only mirrors package concerns
+5. keep only truly app-specific surrounding layout or route content outside the package surface
+
+Use the composable exports if your app still needs a custom arrangement, but the title/description/setup-required semantics should now come from `ai-config`, not a local wrapper.
 
 ## Styling usage
 

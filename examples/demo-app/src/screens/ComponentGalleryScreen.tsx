@@ -5,6 +5,9 @@ import {
   AIApiKeyField,
   AIConfigProvider,
   AIConfigResetButton,
+  AIConfigSettingsHeader,
+  AIConfigSettingsSurface,
+  AIConfigSetupRequired,
   AICredentialStatus,
   AIGenerationSettingsForm,
   AIModeSelector,
@@ -53,6 +56,28 @@ export function ComponentGalleryScreen({ appDefinition }: ComponentGalleryScreen
         <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
           <AIUsageHint />
           <AIConfigResetButton />
+        </AIConfigProvider>
+      </DemoCard>
+      <DemoCard title="Direct settings surface">
+        <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+          <AIConfigSettingsSurface />
+        </AIConfigProvider>
+      </DemoCard>
+      <DemoCard title="Composable settings primitives">
+        <AIConfigProvider appDefinition={appDefinition} loadOnMount={false}>
+          <AIConfigSettingsHeader />
+          <AIConfigSetupRequired
+            requirement={{
+              appId: appDefinition.appId,
+              missingClientId: true,
+              missingGatewayClient: true,
+            }}
+            config={{
+              clientIdLabel: 'gateway client ID',
+              clientIdValue: `${appDefinition.appId}-web`,
+              gatewayLabel: 'hosted gateway adapter',
+            }}
+          />
         </AIConfigProvider>
       </DemoCard>
     </div>
